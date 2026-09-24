@@ -1,0 +1,19 @@
+# Lokale Entwicklungs-/Testdatenbank: offizielles Supabase-Postgres-Image
+# (enthält auth-Schema, Rollen anon/authenticated/service_role, pg_trgm, pgvector).
+services:
+  db:
+    image: supabase/postgres:15.8.1.085
+    container_name: bk-db
+    ports:
+      - "54322:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    volumes:
+      - bk-db-data:/var/lib/postgresql/data
+volumes:
+  bk-db-data:
