@@ -67,13 +67,24 @@ export type ServerEnv = z.infer<typeof schema>;
 
 let cached: ServerEnv | undefined;
 
+function parseEnv() {
+  // Leere Werte aus .env-Dateien gelten als "nicht gesetzt".
+  const raw = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== undefined && v !== ""));
+  return schema.safeParse(raw);
+}
+
+/** Konfigurationsprobleme als Liste (nur Namen und Meldungen, nie Werte) – für die Diagnoseseite. */
+export function configIssues(): string[] {
+  const parsed = parseEnv();
+  return parsed.success ? [] : parsed.error.issues.map((i) => `${i.path.join(".") || "config"}: ${i.message}`);
+}
+
 export function env(): ServerEnv {
   if (!cached) {
-    // Leere Werte aus .env-Dateien gelten als "nicht gesetzt".
-    const raw = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== undefined && v !== ""));
-    const parsed = schema.safeParse(raw);
+    const parsed = parseEnv();
     if (!parsed.success) {
       const details = parsed.error.issues.map((i) => `- ${i.path.join(".") || "config"}: ${i.message}`).join("\n");
+      console.error(`Ungültige Konfiguration:\n${details}`);
       throw new Error(`Ungültige Konfiguration:\n${details}`);
     }
     cached = parsed.data;

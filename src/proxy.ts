@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * Optimistische Weiterleitung nicht angemeldeter Benutzer zur Anmeldung.
  * Die eigentliche Prüfung (Sitzung, Rollen, RLS) erfolgt serverseitig in jeder Seite/Aktion.
  */
-const PUBLIC_PREFIXES = ["/login", "/auth/", "/datenschutz", "/offline", "/api/files/", "/api/jobs/", "/design-system"];
+const PUBLIC_PREFIXES = ["/login", "/auth/", "/datenschutz", "/offline", "/api/files/", "/api/jobs/", "/api/health", "/design-system"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
