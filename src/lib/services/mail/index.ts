@@ -2,7 +2,7 @@ import "server-only";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
-import nodemailer from "nodemailer";
+import nodemailer, { type SendMailOptions } from "nodemailer";
 import { env } from "@/lib/env";
 
 export interface MailAttachment {
@@ -143,7 +143,7 @@ class GraphMailer implements MailAdapter {
   }
 }
 
-function toNodemailer(m: MailMessage): nodemailer.SendMailOptions {
+function toNodemailer(m: MailMessage): SendMailOptions {
   return {
     from: { name: m.fromName, address: env().MAIL_FROM_ADDRESS },
     replyTo: m.replyTo,

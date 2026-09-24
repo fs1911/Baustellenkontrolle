@@ -40,8 +40,9 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     >`select id, full_name, business_email, job_title, default_company_id, is_active
         from public.user_profiles where id = ${userId}`;
     if (!profile || !profile.isActive) return null;
-    const [{ perms }] = await tx<{ perms: unknown }[]>`select app.my_permissions() as perms`;
-    const permissions = permissionsSchema.parse(perms);
+    // ::text, damit die JSON-Schlüssel nicht durch die camelCase-Transformation verändert werden
+    const [{ perms }] = await tx<{ perms: string }[]>`select app.my_permissions()::text as perms`;
+    const permissions = permissionsSchema.parse(JSON.parse(perms));
     return {
       id: profile.id,
       email: profile.businessEmail,

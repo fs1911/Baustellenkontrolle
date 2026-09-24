@@ -1,5 +1,5 @@
 import "server-only";
-import sharp from "sharp";
+import sharp, { type Metadata } from "sharp";
 
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"] as const;
@@ -27,7 +27,7 @@ export async function processPhoto(input: Buffer, opts: { stripMetadata: boolean
   if (input.byteLength === 0 || input.byteLength > MAX_UPLOAD_BYTES) {
     throw new ImageValidationError("Das Bild ist leer oder grösser als 15 MB.");
   }
-  let meta: sharp.Metadata;
+  let meta: Metadata;
   try {
     meta = await sharp(input, { limitInputPixels: 60_000_000 }).metadata();
   } catch {
@@ -53,7 +53,7 @@ export async function processLogo(input: Buffer): Promise<{ data: Buffer; width:
   if (input.byteLength === 0 || input.byteLength > 5 * 1024 * 1024) {
     throw new ImageValidationError("Das Logo ist leer oder grösser als 5 MB.");
   }
-  let meta: sharp.Metadata;
+  let meta: Metadata;
   try {
     meta = await sharp(input, { density: 300 }).metadata();
   } catch {
