@@ -18,12 +18,18 @@ export interface ConnectionParts {
 export class ConnectionStringError extends Error {}
 
 export function parseConnectionString(input: string): ConnectionParts {
-  let s = input.trim();
-  // Häufige Kopierfehler: umschliessende Anführungszeichen
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) s = s.slice(1, -1).trim();
-
-  const scheme = s.match(/^(postgres|postgresql):\/\//i);
-  if (!scheme) throw new ConnectionStringError("DATABASE_URL muss mit postgresql:// beginnen.");
+  // Die Adresse wird auch aus kopierten Varianten herausgelöst, z. B. «DATABASE_URL="postgresql://…"»,
+  // «psql postgresql://…» oder mit umschliessenden Anführungszeichen/Leerzeichen.
+  const found = input.match(/postgres(?:ql)?:\/\/[^\s"'`]+/i);
+  if (!found) {
+    const start = input.trim().slice(0, 12);
+    const hint = /^[A-Za-z_ =-]+$/.test(start) ? ` (der Wert beginnt mit «${start}…»)` : "";
+    throw new ConnectionStringError(
+      `DATABASE_URL enthält keine Adresse, die mit postgresql:// beginnt${hint}. In Supabase unter Connect → Transaction pooler die Zeile «postgresql://…» kopieren.`,
+    );
+  }
+  const s = found[0];
+  const scheme = s.match(/^(postgres|postgresql):\/\//i)!;
   const rest = s.slice(scheme[0].length);
 
   const at = rest.lastIndexOf("@");

@@ -25,6 +25,14 @@ describe("DATABASE_URL tolerant lesen", () => {
     expect(parseConnectionString("postgresql://u:[meinPasswort]@h.pooler.supabase.com:6543/postgres").password).toBe("meinPasswort");
   });
 
+  it("löst die Adresse aus kopierten Varianten heraus", () => {
+    const url = "postgresql://postgres.abc:pw@aws-0-eu-west-1.pooler.supabase.com:6543/postgres";
+    expect(parseConnectionString(`DATABASE_URL="${url}"`).host).toBe("aws-0-eu-west-1.pooler.supabase.com");
+    expect(parseConnectionString(`psql ${url}`).password).toBe("pw");
+    expect(parseConnectionString(`\n  ${url}\n`).port).toBe(6543);
+    expect(() => parseConnectionString("host=db user=postgres")).toThrow(/beginnt mit «host=db user…»/);
+  });
+
   it("lokale Verbindung ohne TLS, sslmode wird respektiert", () => {
     expect(parseConnectionString("postgres://postgres:pw@localhost:54322/postgres").ssl).toBe(false);
     expect(parseConnectionString("postgres://u:pw@h.pooler.supabase.com:6543/postgres?sslmode=disable").ssl).toBe(false);
