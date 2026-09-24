@@ -62,21 +62,35 @@ describe("Mandantentrennung und Baustellenzuordnung", () => {
     });
   });
 
-  it("Management sieht ohne freigegebenen Bericht keine Kontrollen", async () => {
-    expect(await visibleSites(U.mgmt)).toEqual([]);
+  it("Management sieht abgeschlossene Kontrollen, aber keine Entwürfe", async () => {
+    await asUser(U.mgmt, async (tx) => {
+      const rows = await tx<{ status: string; released: boolean }[]>`
+        select i.status, exists (select 1 from public.generated_reports r where r.inspection_id = i.id and r.status in ('released','sent')) as released
+        from public.inspections i`;
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows.every((r) => r.status !== "draft" || r.released)).toBe(true);
+    });
   });
 
-  it("Management sieht Kontrollen mit freigegebenem Bericht", async () => {
+  it("Management sieht Entwürfe erst mit freigegebenem Bericht", async () => {
     await asService(async (tx) => {
-      const [insp] = await tx<{ id: string }[]>`select id from public.inspections where site_id = ${S.strasse} limit 1`;
-      await tx`insert into public.generated_reports (inspection_id, status, released_at, released_by) values (${insp.id}, 'released', now(), ${U.sibe})`;
+      const [insp] = await tx<{ id: string }[]>`insert into public.inspections (site_id, inspector_id) values (${S.aargau}, ${U.sibe}) returning id`;
+      await tx`insert into public.findings (inspection_id, title, assessment) values (${insp.id}, 'Test positiv', 'positive')`;
       await tx`select set_config('request.jwt.claim.sub', ${U.mgmt}, true)`;
       await tx.unsafe("set local role authenticated");
-      const rows = await tx<{ id: string }[]>`select id from public.inspections`;
-      expect(rows.map((r) => r.id)).toEqual([insp.id]);
-      const findings = await tx<{ inspectionId: string }[]>`select inspection_id from public.findings`;
-      expect(findings.length).toBeGreaterThan(0);
-      expect(new Set(findings.map((f) => f.inspectionId))).toEqual(new Set([insp.id]));
+      expect((await tx`select id from public.inspections where id = ${insp.id}`).length).toBe(0);
+      await tx.unsafe("reset role");
+      await tx`insert into public.generated_reports (inspection_id, status, released_at, released_by) values (${insp.id}, 'released', now(), ${U.sibe})`;
+      await tx.unsafe("set local role authenticated");
+      expect((await tx`select id from public.inspections where id = ${insp.id}`).length).toBe(1);
+      expect((await tx`select id from public.findings where inspection_id = ${insp.id}`).length).toBeGreaterThan(0);
+    });
+  });
+
+  it("Management sieht nur freigegebene bzw. versendete Berichte", async () => {
+    await asUser(U.mgmt, async (tx) => {
+      const rows = await tx<{ status: string }[]>`select status from public.generated_reports`;
+      expect(rows.every((r) => r.status === "released" || r.status === "sent")).toBe(true);
     });
   });
 
