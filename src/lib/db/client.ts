@@ -25,8 +25,6 @@ const globalForDb = globalThis as unknown as { __bkSql?: Promise<Sql> };
  */
 const isWorkers = typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
 
-export type DbRoute = "hyperdrive" | "direkt";
-
 const baseOptions = {
   idle_timeout: 20,
   connect_timeout: 10,
@@ -35,23 +33,34 @@ const baseOptions = {
   onnotice: () => {},
 };
 
+let hyperdriveProblem: string | undefined;
+
 async function hyperdriveConnectionString(): Promise<string | undefined> {
   if (!isWorkers) return undefined;
   try {
     // Laufzeit-Modul von workerd; der Name wird dynamisch gebildet, damit Node/Next es nie auflösen.
     const spec = ["cloudflare", "workers"].join(":");
     const mod = (await import(/* @vite-ignore */ /* webpackIgnore: true */ spec)) as {
-      env?: { HYPERDRIVE?: { connectionString?: string } };
+      env?: Record<string, unknown> & { HYPERDRIVE?: { connectionString?: string } };
     };
-    return mod.env?.HYPERDRIVE?.connectionString || undefined;
-  } catch {
-    return undefined;
+    const value = mod.env?.HYPERDRIVE?.connectionString;
+    if (value) return value;
+    // Nur Namen der Bindings, nie Werte.
+    hyperdriveProblem = `keine Binding HYPERDRIVE (vorhanden: ${
+      Object.keys(mod.env ?? {})
+        .sort()
+        .join(", ") || "keine"
+    })`;
+  } catch (err) {
+    hyperdriveProblem = `cloudflare:workers nicht ladbar: ${String((err as Error).message ?? err).slice(0, 120)}`;
   }
+  return undefined;
 }
 
 /** Welcher Verbindungsweg aktuell genutzt wird (für /api/health). */
-export async function dbRoute(): Promise<DbRoute> {
-  return (await hyperdriveConnectionString()) ? "hyperdrive" : "direkt";
+export async function dbRoute(): Promise<string> {
+  if (await hyperdriveConnectionString()) return "hyperdrive";
+  return hyperdriveProblem ? `direkt – ${hyperdriveProblem}` : "direkt";
 }
 
 async function connect(max: number): Promise<Sql> {
