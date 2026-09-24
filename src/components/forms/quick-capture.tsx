@@ -123,7 +123,8 @@ export function QuickCapture({
     });
   };
 
-  const tile = "flex min-h-20 flex-col items-center justify-center gap-1 rounded-xl border-2 text-base font-bold";
+  const tile =
+    "flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 rounded-xl border-2 px-1 text-sm font-bold break-words sm:text-base";
   return (
     <div className="space-y-5">
       <p className="rounded-lg bg-slate-200 px-3 py-2 text-sm">
