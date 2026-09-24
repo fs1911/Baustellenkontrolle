@@ -35,11 +35,9 @@ const schema = z
     GRAPH_CLIENT_SECRET: z.string().optional(),
     GRAPH_SENDER_MAILBOX: z.string().optional(),
 
-    AI_PROVIDER: z.enum(["rules", "anthropic", "openai"]).default("rules"),
+    AI_PROVIDER: z.enum(["rules", "anthropic"]).default("rules"),
     AI_MODEL: z.string().optional(),
     ANTHROPIC_API_KEY: z.string().optional(),
-    OPENAI_API_KEY: z.string().optional(),
-    OPENAI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
 
     CRON_SECRET: z.string().optional(),
   })
@@ -66,7 +64,9 @@ let cached: ServerEnv | undefined;
 
 export function env(): ServerEnv {
   if (!cached) {
-    const parsed = schema.safeParse(process.env);
+    // Leere Werte aus .env-Dateien gelten als "nicht gesetzt".
+    const raw = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== undefined && v !== ""));
+    const parsed = schema.safeParse(raw);
     if (!parsed.success) {
       const details = parsed.error.issues.map((i) => `- ${i.path.join(".") || "config"}: ${i.message}`).join("\n");
       throw new Error(`Ungültige Konfiguration:\n${details}`);
