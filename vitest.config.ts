@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { loadEnv } from "vite";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
@@ -10,6 +11,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    env: { ...loadEnv("test", process.cwd(), ""), MAIL_SANDBOX_DIR: ".data/test-mail-sandbox", APP_ENV: "test" },
     include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"],
     testTimeout: 30000,
     hookTimeout: 60000,

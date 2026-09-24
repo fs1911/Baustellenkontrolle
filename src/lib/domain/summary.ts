@@ -26,7 +26,7 @@ function plural(n: number, one: string, many: string): string {
 export function buildRuleSummary(s: SummaryInput): string {
   const parts: string[] = [];
   parts.push(
-    `Anlässlich der ${s.inspectionType} vom ${s.inspectionDate} auf der Baustelle «${s.siteName}» wurden ${plural(s.counts.total, "Feststellung", "Feststellungen")} dokumentiert: ${plural(s.counts.positive, "positive Feststellung", "positive Feststellungen")}, ${plural(s.counts.negative, "Abweichung", "Abweichungen")} und ${plural(s.counts.improvement, "Verbesserungsmöglichkeit", "Verbesserungsmöglichkeiten")}.`,
+    `Anlässlich der ${s.inspectionType} vom ${s.inspectionDate} auf der Baustelle «${s.siteName}» ${s.counts.total === 1 ? "wurde" : "wurden"} ${plural(s.counts.total, "Feststellung", "Feststellungen")} dokumentiert: ${plural(s.counts.positive, "positive Feststellung", "positive Feststellungen")}, ${plural(s.counts.negative, "Abweichung", "Abweichungen")} und ${plural(s.counts.improvement, "Verbesserungsmöglichkeit", "Verbesserungsmöglichkeiten")}.`,
   );
   if (s.counts.criticalOrHigh > 0) {
     const items = s.criticalItems.slice(0, 3).map((c) => `«${c.title}»`).join(", ");
