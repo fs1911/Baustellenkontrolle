@@ -1,13 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { CloudOff, RefreshCw } from "lucide-react";
 import { listQueue, QUEUE_EVENT, syncQueue } from "@/lib/offline/queue";
 import { useToast } from "@/components/ui/toast";
 
 /** Zeigt Offline-Status und ausstehende Synchronisationen; registriert den Service Worker. */
 export function ConnectivityBanner() {
-  const [online, setOnline] = useState(true);
+  const online = useSyncExternalStore(
+    (cb) => {
+      window.addEventListener("online", cb);
+      window.addEventListener("offline", cb);
+      return () => {
+        window.removeEventListener("online", cb);
+        window.removeEventListener("offline", cb);
+      };
+    },
+    () => navigator.onLine,
+    () => true,
+  );
   const [pending, setPending] = useState(0);
   const [errors, setErrors] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -29,25 +40,22 @@ export function ConnectivityBanner() {
   }, [refresh, toast]);
 
   useEffect(() => {
-    setOnline(navigator.onLine);
-    const on = () => {
-      setOnline(true);
-      void runSync();
-    };
-    const off = () => setOnline(false);
+    const on = () => void runSync();
     const changed = () => void refresh();
     window.addEventListener("online", on);
-    window.addEventListener("offline", off);
     window.addEventListener(QUEUE_EVENT, changed);
-    void refresh().then(() => {
-      if (navigator.onLine) void runSync();
-    });
+    // Erstabgleich asynchron nach dem Rendern (IndexedDB ist ein externes System)
+    const initial = setTimeout(() => {
+      void refresh().then(() => {
+        if (navigator.onLine) void runSync();
+      });
+    }, 0);
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
     return () => {
+      clearTimeout(initial);
       window.removeEventListener("online", on);
-      window.removeEventListener("offline", off);
       window.removeEventListener(QUEUE_EVENT, changed);
     };
   }, [refresh, runSync]);
