@@ -19,12 +19,15 @@ export interface CurrentUser {
 }
 
 async function resolveUserId(): Promise<string | null> {
+  // Zuerst Cookies lesen: markiert die Seite als dynamisch, bevor Konfiguration benötigt wird
+  // (der Build läuft ohne Secrets, siehe docs/deployment.md).
+  const cookieStore = await cookies();
   if (env().AUTH_PROVIDER === "supabase") {
     const supabase = await supabaseAuthClient();
     const { data } = await supabase.auth.getUser();
     return data.user?.id ?? null;
   }
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const claims = await verifySessionToken(token);
   return claims?.sub ?? null;

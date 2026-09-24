@@ -90,8 +90,15 @@ anmelden) und die Adresse zusätzlich mit Cloudflare Access schützen, sobald ec
 Lokal testen: `npm run build:workers` und `npm run preview:workers` (workerd). Achtung: der Build kopiert
 `.env.local` nach `dist/server/.dev.vars` (nur lokal, wird nicht deployt).
 
-Alternativ Deployment über **Workers Builds** (GitHub-Anbindung im Cloudflare-Dashboard): Build-Befehl
-`npm run build:workers`, Deploy-Befehl `npx vinext-cloudflare deploy --skip-build`.
+Alternativ Deployment über **Workers Builds** (GitHub-Anbindung im Cloudflare-Dashboard):
+
+| Feld | Wert |
+|---|---|
+| Build-Befehl | `npm run build:workers` (nicht `npm run build` – das ist der Node-Build) |
+| Deploy-Befehl | `npx vinext-cloudflare deploy --skip-build` |
+| Secrets | Worker → Settings → Variables and Secrets: `DATABASE_URL`, `SESSION_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` (Typ «Secret») |
+
+Der Build benötigt keine Secrets; sie werden erst zur Laufzeit gelesen.
 
 ## Zeitgesteuerte Jobs
 
