@@ -19,11 +19,16 @@ export async function POST(request: Request, ctx: RouteContext<"/api/actions/[id
   const { id } = await ctx.params;
   const form = await request.formData();
   const file = form.get("file");
-  const comment = String(form.get("comment") ?? "").trim().slice(0, 2000) || "Abschlussnachweis hochgeladen";
+  const comment =
+    String(form.get("comment") ?? "")
+      .trim()
+      .slice(0, 2000) || "Abschlussnachweis hochgeladen";
   if (!(file instanceof File)) return NextResponse.json({ error: "Keine Datei übermittelt." }, { status: 400 });
   try {
     await withUser(user.id, async (tx) => {
-      const [a] = await tx<{ companyId: string; siteId: string; status: string }[]>`select company_id, site_id, status from public.corrective_actions where id = ${id}`;
+      const [a] = await tx<
+        { companyId: string; siteId: string; status: string }[]
+      >`select company_id, site_id, status from public.corrective_actions where id = ${id}`;
       if (!a) throw Object.assign(new Error("forbidden"), { code: "42501" });
       const settings = await loadSettings(tx);
       const img = await processPhoto(Buffer.from(await file.arrayBuffer()), { stripMetadata: settings.images.stripMetadata });

@@ -4,12 +4,42 @@ import type { DashboardFilters } from "./dashboard";
 import { loadKpis, type Kpis } from "./dashboard";
 
 export interface CompanyComparison {
-  id: string; name: string; inspections: number; findings: number; positive: number; deviations: number;
-  criticalOpen: number; overdue: number; completionRate: number | null; avgDays: number | null;
+  id: string;
+  name: string;
+  inspections: number;
+  findings: number;
+  positive: number;
+  deviations: number;
+  criticalOpen: number;
+  overdue: number;
+  completionRate: number | null;
+  avgDays: number | null;
 }
-export interface MonthPoint { month: string; label: string; open: number; overdue: number }
-export interface SystemicTheme { title: string; scope: string; insight: string; score: number; memberCount: number; recommendation: string | null }
-export interface CriticalCase { id: string; inspectionId: string; title: string; siteName: string; companyName: string; createdAt: Date; status: string; dueDate: string | null; overdue: boolean }
+export interface MonthPoint {
+  month: string;
+  label: string;
+  open: number;
+  overdue: number;
+}
+export interface SystemicTheme {
+  title: string;
+  scope: string;
+  insight: string;
+  score: number;
+  memberCount: number;
+  recommendation: string | null;
+}
+export interface CriticalCase {
+  id: string;
+  inspectionId: string;
+  title: string;
+  siteName: string;
+  companyName: string;
+  createdAt: Date;
+  status: string;
+  dueDate: string | null;
+  overdue: boolean;
+}
 
 export interface ManagementData {
   filters: DashboardFilters;

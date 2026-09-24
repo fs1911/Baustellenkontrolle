@@ -2,8 +2,7 @@ import "server-only";
 import { ZodError } from "zod";
 
 export type ActionResult<T = undefined> =
-  | { ok: true; data: T; message?: string }
-  | { ok: false; error: string; fieldErrors?: Record<string, string> };
+  { ok: true; data: T; message?: string } | { ok: false; error: string; fieldErrors?: Record<string, string> };
 
 /** Übersetzt technische Fehler in verständliche Meldungen (ohne interne Details preiszugeben). */
 export function toUserError(err: unknown): { ok: false; error: string; fieldErrors?: Record<string, string> } {
@@ -21,9 +20,12 @@ export function toUserError(err: unknown): { ok: false; error: string; fieldErro
       if (e.message && /vorbehalten|Berechtigung/.test(e.message)) return { ok: false, error: e.message };
       return { ok: false, error: "Für diese Aktion fehlt die Berechtigung." };
     case "23514":
-      if (e.constraint_name === "findings_critical_check") return { ok: false, error: "Kritische Abweichungen benötigen Kategorie, verantwortliche Rolle und Massnahmenstatus." };
-      if (e.constraint_name === "findings_closed_check") return { ok: false, error: "Zum Schliessen ist eine Abschluss- bzw. Verifikationsinformation erforderlich." };
-      if (e.constraint_name === "corrective_actions_verified_check") return { ok: false, error: "Für Verifikation oder Abschluss ist eine Bemerkung erforderlich." };
+      if (e.constraint_name === "findings_critical_check")
+        return { ok: false, error: "Kritische Abweichungen benötigen Kategorie, verantwortliche Rolle und Massnahmenstatus." };
+      if (e.constraint_name === "findings_closed_check")
+        return { ok: false, error: "Zum Schliessen ist eine Abschluss- bzw. Verifikationsinformation erforderlich." };
+      if (e.constraint_name === "corrective_actions_verified_check")
+        return { ok: false, error: "Für Verifikation oder Abschluss ist eine Bemerkung erforderlich." };
       return { ok: false, error: e.message && !e.message.includes("violates") ? e.message : "Die Angaben verletzen eine fachliche Regel." };
     case "23505":
       return { ok: false, error: "Ein Eintrag mit diesen Angaben existiert bereits." };

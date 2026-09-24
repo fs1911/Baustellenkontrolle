@@ -5,7 +5,14 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import { withUser } from "@/lib/db/client";
-import { findingSchema, inspectionSchema, siteSchema, type FindingInput, type InspectionInput, type SiteInput } from "@/lib/domain/validation";
+import {
+  findingSchema,
+  inspectionSchema,
+  siteSchema,
+  type FindingInput,
+  type InspectionInput,
+  type SiteInput,
+} from "@/lib/domain/validation";
 import { canCreateSite } from "@/lib/domain/permissions";
 import { saveFinding } from "@/lib/services/findings";
 import { recomputeRecurringClusters } from "@/lib/services/recurrence-job";
@@ -28,8 +35,15 @@ export async function createInspectionAction(input: InspectionInput): Promise<Ac
     id = await withUser(user.id, async (tx) => {
       const [row] = await tx<{ id: string }[]>`
         insert into public.inspections ${tx({
-          companyId: data.companyId, siteId: data.siteId, templateId: data.templateId, inspectionType: data.inspectionType,
-          inspectedAt: zurichLocalToDate(data.inspectedAt), inspectorId: user.id, weather: data.weather, area: data.area, notes: data.notes,
+          companyId: data.companyId,
+          siteId: data.siteId,
+          templateId: data.templateId,
+          inspectionType: data.inspectionType,
+          inspectedAt: zurichLocalToDate(data.inspectedAt),
+          inspectorId: user.id,
+          weather: data.weather,
+          area: data.area,
+          notes: data.notes,
         })} returning id`;
       if (data.participants.length) {
         await tx`insert into public.inspection_participants ${tx(data.participants.map((p) => ({ ...p, inspectionId: row.id })))}`;
@@ -49,7 +63,11 @@ export async function updateInspectionAction(id: string, input: InspectionInput)
     const data = inspectionSchema.parse(input);
     await withUser(user.id, async (tx) => {
       const r = await tx`update public.inspections set ${tx({
-        inspectionType: data.inspectionType, inspectedAt: zurichLocalToDate(data.inspectedAt), weather: data.weather, area: data.area, notes: data.notes,
+        inspectionType: data.inspectionType,
+        inspectedAt: zurichLocalToDate(data.inspectedAt),
+        weather: data.weather,
+        area: data.area,
+        notes: data.notes,
       })} where id = ${id}`;
       if (r.count === 0) throw Object.assign(new Error("forbidden"), { code: "42501" });
       await tx`delete from public.inspection_participants where inspection_id = ${id}`;
@@ -68,7 +86,8 @@ export async function setInspectionStatusAction(id: string, status: "draft" | "c
   const user = await requireUser();
   try {
     await withUser(user.id, async (tx) => {
-      const r = await tx`update public.inspections set status = ${status}, completed_at = ${status === "completed" ? new Date() : null} where id = ${id}`;
+      const r =
+        await tx`update public.inspections set status = ${status}, completed_at = ${status === "completed" ? new Date() : null} where id = ${id}`;
       if (r.count === 0) throw Object.assign(new Error("forbidden"), { code: "42501" });
     });
     if (status === "completed") {
@@ -88,7 +107,11 @@ export async function deleteInspectionAction(id: string): Promise<ActionResult> 
     await withUser(user.id, async (tx) => {
       const r = await tx`update public.inspections set deleted_at = now() where id = ${id} and status = 'draft'
                          and not exists (select 1 from public.generated_reports g where g.inspection_id = ${id} and g.status in ('released','sent'))`;
-      if (r.count === 0) throw Object.assign(new Error("Nur Entwürfe ohne freigegebenen Bericht können gelöscht werden."), { code: "42501", message: "Nur Entwürfe ohne freigegebenen Bericht können gelöscht werden (Berechtigung vorbehalten)." });
+      if (r.count === 0)
+        throw Object.assign(new Error("Nur Entwürfe ohne freigegebenen Bericht können gelöscht werden."), {
+          code: "42501",
+          message: "Nur Entwürfe ohne freigegebenen Bericht können gelöscht werden (Berechtigung vorbehalten).",
+        });
     });
   } catch (err) {
     return toUserError(err);
@@ -97,7 +120,17 @@ export async function deleteInspectionAction(id: string): Promise<ActionResult> 
   redirect("/kontrollen");
 }
 
-export async function createSiteAction(input: SiteInput): Promise<ActionResult<{ id: string; name: string; siteNumber: string; street: string | null; postalCode: string | null; city: string | null; companyId: string }>> {
+export async function createSiteAction(input: SiteInput): Promise<
+  ActionResult<{
+    id: string;
+    name: string;
+    siteNumber: string;
+    street: string | null;
+    postalCode: string | null;
+    city: string | null;
+    companyId: string;
+  }>
+> {
   const user = await requireUser();
   try {
     const data = siteSchema.parse(input);
@@ -110,13 +143,30 @@ export async function createSiteAction(input: SiteInput): Promise<ActionResult<{
         on conflict (company_id, project_number) do update set name = public.projects.name returning id`;
       const [row] = await tx<{ id: string }[]>`
         insert into public.construction_sites ${tx({
-          companyId: data.companyId, projectId: project.id, siteNumber: data.siteNumber, name: data.name,
-          street: data.street, postalCode: data.postalCode, city: data.city, canton: data.canton,
+          companyId: data.companyId,
+          projectId: project.id,
+          siteNumber: data.siteNumber,
+          name: data.name,
+          street: data.street,
+          postalCode: data.postalCode,
+          city: data.city,
+          canton: data.canton,
         })} returning id`;
       return row;
     });
     revalidatePath("/baustellen");
-    return { ok: true, data: { id: site.id, name: data.name, siteNumber: data.siteNumber, street: data.street, postalCode: data.postalCode, city: data.city, companyId: data.companyId } };
+    return {
+      ok: true,
+      data: {
+        id: site.id,
+        name: data.name,
+        siteNumber: data.siteNumber,
+        street: data.street,
+        postalCode: data.postalCode,
+        city: data.city,
+        companyId: data.companyId,
+      },
+    };
   } catch (err) {
     return toUserError(err);
   }

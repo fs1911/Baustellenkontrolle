@@ -18,7 +18,8 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const companyId = String(form.get("companyId") ?? "");
   const file = form.get("file");
-  if (!/^[0-9a-f-]{36}$/i.test(companyId) || !(file instanceof File)) return NextResponse.json({ error: "Ungültige Anfrage" }, { status: 400 });
+  if (!/^[0-9a-f-]{36}$/i.test(companyId) || !(file instanceof File))
+    return NextResponse.json({ error: "Ungültige Anfrage" }, { status: 400 });
   try {
     const logo = await processLogo(Buffer.from(await file.arrayBuffer()));
     const path = `${companyId}/logo-${randomUUID()}.png`;

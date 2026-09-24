@@ -88,6 +88,13 @@ export async function loadClassifierCatalog(tx: Tx): Promise<CatalogCategory[]> 
     referenceIds: mappings.filter((m) => m.categoryId === c.id).map((m) => m.legalReferenceId),
     subcategories: subcategories
       .filter((s) => s.categoryId === c.id)
-      .map((s) => ({ id: s.id, code: s.code, name: s.name, keywords: s.keywords, defaultRisk: s.defaultRisk, sampleAction: s.sampleAction })),
+      .map((s) => ({
+        id: s.id,
+        code: s.code,
+        name: s.name,
+        keywords: s.keywords,
+        defaultRisk: s.defaultRisk,
+        sampleAction: s.sampleAction,
+      })),
   }));
 }

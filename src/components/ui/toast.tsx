@@ -5,7 +5,11 @@ import { CheckCircle2, Info, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 type ToastTone = "success" | "error" | "info";
-interface ToastItem { id: number; tone: ToastTone; message: string }
+interface ToastItem {
+  id: number;
+  tone: ToastTone;
+  message: string;
+}
 const ToastContext = createContext<(message: string, tone?: ToastTone) => void>(() => {});
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -18,7 +22,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={push}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex flex-col items-center gap-2 px-3 md:bottom-6" aria-live="polite">
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex flex-col items-center gap-2 px-3 md:bottom-6"
+        aria-live="polite"
+      >
         {items.map((t) => {
           const Icon = t.tone === "success" ? CheckCircle2 : t.tone === "error" ? XCircle : Info;
           return (

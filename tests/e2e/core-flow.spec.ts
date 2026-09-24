@@ -64,7 +64,9 @@ test("Kernprozess Baustellenkontrolle bis Versand", async ({ page }) => {
 
   await page.getByRole("button", { name: "Summary vorschlagen" }).click();
   await expect(page.getByLabel(/Management Summary/)).toHaveValue(/Feststellungen/);
-  await expect(page.getByLabel("Betreff")).toHaveValue(/Baustellenkontrollbericht – Beispielgesellschaft Hochbau AG – Wohnüberbauung Birr – /);
+  await expect(page.getByLabel("Betreff")).toHaveValue(
+    /Baustellenkontrollbericht – Beispielgesellschaft Hochbau AG – Wohnüberbauung Birr – /,
+  );
   await page.getByRole("button", { name: "Bericht freigeben und senden" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("button", { name: "Jetzt freigeben und senden" })).toBeDisabled();

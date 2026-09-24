@@ -8,7 +8,11 @@ import { Providers } from "@/components/app/providers";
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await requireUser();
   const roles = allRoles(user.permissions);
-  const roleLabel = roles.length ? roles.map((r) => ROLE_LABEL[r]).join(", ") : user.permissions.work_site_ids.length ? "Baustellenzugang" : "Ohne Rolle";
+  const roleLabel = roles.length
+    ? roles.map((r) => ROLE_LABEL[r]).join(", ")
+    : user.permissions.work_site_ids.length
+      ? "Baustellenzugang"
+      : "Ohne Rolle";
   return (
     <Providers>
       <AppShell items={navItems(user.permissions)} user={{ name: user.fullName, roleLabel }} canCreate={canQuickCreate(user.permissions)}>

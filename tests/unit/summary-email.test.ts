@@ -4,7 +4,9 @@ import { bodyToHtml, checkRecipientPolicy, defaultSubject, parseAddressList } fr
 
 describe("Regelbasierte Management Summary", () => {
   const base = {
-    companyName: "Beispielgesellschaft Hochbau AG", siteName: "Wohnüberbauung Birr", inspectionType: "Routinekontrolle",
+    companyName: "Beispielgesellschaft Hochbau AG",
+    siteName: "Wohnüberbauung Birr",
+    inspectionType: "Routinekontrolle",
     inspectionDate: "12.08.2026",
     counts: { total: 6, positive: 2, negative: 3, improvement: 1, criticalOrHigh: 1, openActions: 3, recurring: 2 },
     topCategories: [{ name: "Absturzsicherheit", count: 2 }],
@@ -27,16 +29,48 @@ describe("Regelbasierte Management Summary", () => {
 
 describe("E-Mail", () => {
   it("baut den Betreff gemäss Vorgabe", () => {
-    expect(defaultSubject({ companyName: "tozzo gruppe ag", siteName: "Birr", siteNumber: null, inspectionDate: "01.09.2026", reportNumber: "TOZ-2026-0001", senderName: "X", summary: "", positives: 0, deviations: 0, improvements: 0, openActions: 0, criticalOrHigh: 0 }))
-      .toBe("Baustellenkontrollbericht – tozzo gruppe ag – Birr – 01.09.2026");
+    expect(
+      defaultSubject({
+        companyName: "tozzo gruppe ag",
+        siteName: "Birr",
+        siteNumber: null,
+        inspectionDate: "01.09.2026",
+        reportNumber: "TOZ-2026-0001",
+        senderName: "X",
+        summary: "",
+        positives: 0,
+        deviations: 0,
+        improvements: 0,
+        openActions: 0,
+        criticalOrHigh: 0,
+      }),
+    ).toBe("Baustellenkontrollbericht – tozzo gruppe ag – Birr – 01.09.2026");
   });
   it("prüft Adresslisten", () => {
     expect(parseAddressList("a@b.ch; falsch, C@D.CH a@b.ch")).toEqual({ valid: ["a@b.ch", "c@d.ch"], invalid: ["falsch"] });
   });
   it("beschränkt freie Empfänger für Projektleitende", () => {
-    const errors = checkRecipientPolicy({ to: ["pl@firma.ch", "extern@andere.ch"], cc: [], bcc: [], senderEmail: "pl@firma.ch", companyDistribution: [], siteMemberEmails: [], mayUseArbitraryRecipients: false });
+    const errors = checkRecipientPolicy({
+      to: ["pl@firma.ch", "extern@andere.ch"],
+      cc: [],
+      bcc: [],
+      senderEmail: "pl@firma.ch",
+      companyDistribution: [],
+      siteMemberEmails: [],
+      mayUseArbitraryRecipients: false,
+    });
     expect(errors.join()).toContain("extern@andere.ch");
-    expect(checkRecipientPolicy({ to: ["extern@andere.ch"], cc: [], bcc: [], senderEmail: "x@y.ch", companyDistribution: [], siteMemberEmails: [], mayUseArbitraryRecipients: true })).toEqual([]);
+    expect(
+      checkRecipientPolicy({
+        to: ["extern@andere.ch"],
+        cc: [],
+        bcc: [],
+        senderEmail: "x@y.ch",
+        companyDistribution: [],
+        siteMemberEmails: [],
+        mayUseArbitraryRecipients: true,
+      }),
+    ).toEqual([]);
   });
   it("escaped Benutzereingaben im HTML", () => {
     const html = bodyToHtml("<script>alert(1)</script>", { companyName: "A&B", primaryColor: "javascript:x", disclaimer: "d" });

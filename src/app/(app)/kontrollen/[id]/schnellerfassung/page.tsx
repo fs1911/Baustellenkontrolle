@@ -20,12 +20,17 @@ export default async function QuickCapturePage({ params }: PageProps<"/kontrolle
     if (!inspection) return null;
     const templates = await listTemplates(tx);
     const cats = await tx<{ id: string; code: string }[]>`select id, code from public.finding_categories`;
-    const subs = await tx<{ id: string; code: string; sampleAction: string | null }[]>`select id, code, sample_action from public.finding_subcategories`;
+    const subs = await tx<
+      { id: string; code: string; sampleAction: string | null }[]
+    >`select id, code, sample_action from public.finding_subcategories`;
     return { inspection, templates, cats, subs };
   });
   if (!data || !canEditSite(user.permissions, data.inspection.siteId)) notFound();
   const i = data.inspection;
-  const tpl = data.templates.find((t) => t.id === i.templateId) ?? data.templates.find((t) => t.companyId === i.companyId) ?? data.templates.find((t) => !t.companyId);
+  const tpl =
+    data.templates.find((t) => t.id === i.templateId) ??
+    data.templates.find((t) => t.companyId === i.companyId) ??
+    data.templates.find((t) => !t.companyId);
   const quick: QuickTemplate[] = (tpl?.items ?? []).map((it) => {
     const sub = data.subs.find((s) => s.code === it.subcategoryCode);
     return {
@@ -41,11 +46,22 @@ export default async function QuickCapturePage({ params }: PageProps<"/kontrolle
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader
-        back={<Link href={`/kontrollen/${i.id}`} className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink"><ChevronLeft className="size-4" aria-hidden /> Zur Kontrolle</Link>}
+        back={
+          <Link
+            href={`/kontrollen/${i.id}`}
+            className="text-ink-muted hover:text-ink inline-flex min-h-10 items-center gap-1 text-sm font-semibold"
+          >
+            <ChevronLeft className="size-4" aria-hidden /> Zur Kontrolle
+          </Link>
+        }
         title="Schnellerfassung"
       />
       <QuickCapture
-        inspection={{ id: i.id, label: i.site.name, context: `${i.company.name} · ${i.site.name} (${i.site.siteNumber}) · ${formatDateTime(i.inspectedAt)} · ${user.fullName}` }}
+        inspection={{
+          id: i.id,
+          label: i.site.name,
+          context: `${i.company.name} · ${i.site.name} (${i.site.siteNumber}) · ${formatDateTime(i.inspectedAt)} · ${user.fullName}`,
+        }}
         templates={quick}
       />
     </div>

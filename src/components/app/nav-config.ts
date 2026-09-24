@@ -2,9 +2,13 @@ import type { Permissions } from "@/lib/domain/permissions";
 import { canCreateInspections, canSeeAnalytics, canSeeGroupAnalytics, hasAnyRole } from "@/lib/domain/permissions";
 
 export type NavIcon =
-  | "dashboard" | "inspections" | "actions" | "findings" | "recurring" | "sites" | "reports" | "management" | "admin" | "settings";
+  "dashboard" | "inspections" | "actions" | "findings" | "recurring" | "sites" | "reports" | "management" | "admin" | "settings";
 
-export interface NavItem { href: string; label: string; icon: NavIcon }
+export interface NavItem {
+  href: string;
+  label: string;
+  icon: NavIcon;
+}
 
 export function navItems(p: Permissions): NavItem[] {
   const items: NavItem[] = [];

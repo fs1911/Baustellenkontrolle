@@ -26,14 +26,34 @@ export default async function EditInspectionPage({ params }: PageProps<"/kontrol
       <InspectionForm
         inspectionId={i.id}
         companies={[{ id: i.companyId, name: i.company.name, shortCode: i.company.shortCode }]}
-        sites={[{ id: i.siteId, companyId: i.companyId, name: i.site.name, siteNumber: i.site.siteNumber, street: i.site.street, postalCode: i.site.postalCode, city: i.site.city }]}
+        sites={[
+          {
+            id: i.siteId,
+            companyId: i.companyId,
+            name: i.site.name,
+            siteNumber: i.site.siteNumber,
+            street: i.site.street,
+            postalCode: i.site.postalCode,
+            city: i.site.city,
+          },
+        ]}
         templates={data.templates.map((t) => ({ id: t.id, name: t.name, companyId: t.companyId }))}
         creatableCompanyIds={[]}
         inspector={i.inspectorName}
         defaults={{
-          companyId: i.companyId, siteId: i.siteId, inspectionType: i.inspectionType, inspectedAt: toLocalInputValue(new Date(i.inspectedAt)),
-          weather: i.weather ?? "", area: i.area ?? "", notes: i.notes ?? "", templateId: i.templateId ?? "",
-          participants: i.participants.map((p) => ({ fullName: p.fullName, functionLabel: p.functionLabel ?? "", organisation: p.organisation ?? "" })),
+          companyId: i.companyId,
+          siteId: i.siteId,
+          inspectionType: i.inspectionType,
+          inspectedAt: toLocalInputValue(new Date(i.inspectedAt)),
+          weather: i.weather ?? "",
+          area: i.area ?? "",
+          notes: i.notes ?? "",
+          templateId: i.templateId ?? "",
+          participants: i.participants.map((p) => ({
+            fullName: p.fullName,
+            functionLabel: p.functionLabel ?? "",
+            organisation: p.organisation ?? "",
+          })),
         }}
       />
     </>

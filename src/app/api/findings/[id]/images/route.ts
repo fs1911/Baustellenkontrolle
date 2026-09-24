@@ -17,7 +17,10 @@ export async function POST(request: Request, ctx: RouteContext<"/api/findings/[i
   const { id } = await ctx.params;
   const form = await request.formData();
   const file = form.get("file");
-  const caption = String(form.get("caption") ?? "").trim().slice(0, 500) || null;
+  const caption =
+    String(form.get("caption") ?? "")
+      .trim()
+      .slice(0, 500) || null;
   if (!(file instanceof File)) return NextResponse.json({ error: "Keine Datei übermittelt." }, { status: 400 });
   if (file.size > MAX_UPLOAD_BYTES) return NextResponse.json({ error: "Das Bild ist grösser als 15 MB." }, { status: 413 });
   try {

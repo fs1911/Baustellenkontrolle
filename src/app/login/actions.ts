@@ -60,7 +60,10 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     });
   }
   resetRateLimit(`${email}|${ip}`);
-  await withUser(userId, (tx) => tx`select app.log_event('session', ${userId}, 'login', null, ${tx.json({ provider: env().AUTH_PROVIDER })})`);
+  await withUser(
+    userId,
+    (tx) => tx`select app.log_event('session', ${userId}, 'login', null, ${tx.json({ provider: env().AUTH_PROVIDER })})`,
+  );
   redirect(safeNext(next));
 }
 

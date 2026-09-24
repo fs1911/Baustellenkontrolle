@@ -21,23 +21,46 @@ export default async function UsersAdminPage() {
     companies: await tx<{ id: string; name: string }[]>`select id, name from public.companies where deleted_at is null order by name`,
     sites: await tx<{ id: string; name: string }[]>`select id, name from public.construction_sites where deleted_at is null order by name`,
   }));
-  const rows: UserRow[] = d.users.map((u) => ({ ...u, roles: d.roles.filter((r) => r.userId === u.id), memberships: d.memberships.filter((m) => m.userId === u.id) }));
+  const rows: UserRow[] = d.users.map((u) => ({
+    ...u,
+    roles: d.roles.filter((r) => r.userId === u.id),
+    memberships: d.memberships.filter((m) => m.userId === u.id),
+  }));
   return (
     <>
-      <PageHeader title="Benutzer und Rollen" description="Rechte werden serverseitig über Rollen (gruppenweit oder je Gesellschaft) und Baustellenzuordnungen durchgesetzt." />
+      <PageHeader
+        title="Benutzer und Rollen"
+        description="Rechte werden serverseitig über Rollen (gruppenweit oder je Gesellschaft) und Baustellenzuordnungen durchgesetzt."
+      />
       <Card className="mb-5">
-        <CardHeader title="Neuen Benutzer anlegen" description={env().AUTH_PROVIDER === "supabase" ? "Anmeldung über Supabase Auth (MFA/Microsoft Entra ID konfigurierbar)" : "Lokaler Entwicklungsmodus"} />
-        <CardBody><CreateUserForm localAuth={env().AUTH_PROVIDER === "local"} /></CardBody>
+        <CardHeader
+          title="Neuen Benutzer anlegen"
+          description={
+            env().AUTH_PROVIDER === "supabase"
+              ? "Anmeldung über Supabase Auth (MFA/Microsoft Entra ID konfigurierbar)"
+              : "Lokaler Entwicklungsmodus"
+          }
+        />
+        <CardBody>
+          <CreateUserForm localAuth={env().AUTH_PROVIDER === "local"} />
+        </CardBody>
       </Card>
       <div className="space-y-3">
         {rows.map((u) => (
-          <details key={u.id} className="group rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-card)]">
+          <details key={u.id} className="group border-line rounded-[var(--radius-card)] border bg-white shadow-[var(--shadow-card)]">
             <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-2 px-5 py-2">
-              <span className="font-semibold">{u.fullName}</span><span className="text-sm text-ink-muted">{u.email}{u.jobTitle ? ` · ${u.jobTitle}` : ""}</span>
+              <span className="font-semibold">{u.fullName}</span>
+              <span className="text-ink-muted text-sm">
+                {u.email}
+                {u.jobTitle ? ` · ${u.jobTitle}` : ""}
+              </span>
               {!u.isActive && <Tag className="text-negative">deaktiviert</Tag>}
-              <Tag>{u.roles.length} Rolle(n)</Tag><Tag>{u.memberships.length} Baustelle(n)</Tag>
+              <Tag>{u.roles.length} Rolle(n)</Tag>
+              <Tag>{u.memberships.length} Baustelle(n)</Tag>
             </summary>
-            <div className="border-t border-line p-5"><UserCard u={u} companies={d.companies} sites={d.sites} /></div>
+            <div className="border-line border-t p-5">
+              <UserCard u={u} companies={d.companies} sites={d.sites} />
+            </div>
           </details>
         ))}
       </div>

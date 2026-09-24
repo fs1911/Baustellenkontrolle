@@ -26,8 +26,16 @@ export function parseDashboardFilters(sp: SP, defaultDays = 90): DashboardFilter
 export function findingsLink(f: DashboardFilters, extra: Record<string, string | undefined> = {}): string {
   const p = new URLSearchParams();
   const base: Record<string, string | undefined> = {
-    gesellschaft: f.companyId, baustelle: f.siteId, von: f.from, bis: f.to, kategorie: f.categoryId, risiko: f.riskLevel,
-    status: f.status, rolle: f.responsibleRole, kontrolleur: f.inspectorId, ...extra,
+    gesellschaft: f.companyId,
+    baustelle: f.siteId,
+    von: f.from,
+    bis: f.to,
+    kategorie: f.categoryId,
+    risiko: f.riskLevel,
+    status: f.status,
+    rolle: f.responsibleRole,
+    kontrolleur: f.inspectorId,
+    ...extra,
   };
   for (const [k, v] of Object.entries(base)) if (v) p.set(k, v);
   return `/feststellungen?${p.toString()}`;

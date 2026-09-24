@@ -9,8 +9,19 @@ import { FilterBar, FilterInput, FilterSelect, param } from "@/components/app/fi
 export const metadata: Metadata = { title: "Audit-Log" };
 
 const ACTIONS: Record<string, string> = {
-  insert: "Erstellt", update: "Geändert", delete: "Gelöscht", soft_delete: "Gelöscht (Soft)", release: "Freigegeben", send: "Versendet",
-  send_failed: "Versand fehlgeschlagen", login: "Anmeldung", export: "Export", download: "Download", recompute: "Neuberechnung", retention_run: "Löschlauf", seed: "Demo-Daten",
+  insert: "Erstellt",
+  update: "Geändert",
+  delete: "Gelöscht",
+  soft_delete: "Gelöscht (Soft)",
+  release: "Freigegeben",
+  send: "Versendet",
+  send_failed: "Versand fehlgeschlagen",
+  login: "Anmeldung",
+  export: "Export",
+  download: "Download",
+  recompute: "Neuberechnung",
+  retention_run: "Löschlauf",
+  seed: "Demo-Daten",
 };
 
 export default async function AuditPage({ searchParams }: PageProps<"/admin/audit">) {
@@ -20,7 +31,18 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
   const action = param(sp, "aktion");
   const q = param(sp, "q");
   const { rows, entities } = await withUser(user.id, async (tx) => ({
-    rows: await tx<{ id: number; occurredAt: Date; actorName: string | null; entityType: string; entityId: string | null; action: string; changes: unknown; context: unknown }[]>`
+    rows: await tx<
+      {
+        id: number;
+        occurredAt: Date;
+        actorName: string | null;
+        entityType: string;
+        entityId: string | null;
+        action: string;
+        changes: unknown;
+        context: unknown;
+      }[]
+    >`
       select a.id, a.occurred_at, p.full_name as actor_name, a.entity_type, a.entity_id, a.action, a.changes, a.context
       from public.audit_logs a left join public.user_profiles p on p.id = a.actor_id
       where true ${entity ? tx`and a.entity_type = ${entity}` : tx``} ${action ? tx`and a.action = ${action}` : tx``}
@@ -30,22 +52,53 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
   }));
   return (
     <>
-      <PageHeader title="Audit-Log" description="Unveränderliches Protokoll: Erstellung, Änderung, Löschung, Freigabe, Versand, Anmeldung, Export (max. 300 Einträge angezeigt)." />
+      <PageHeader
+        title="Audit-Log"
+        description="Unveränderliches Protokoll: Erstellung, Änderung, Löschung, Freigabe, Versand, Anmeldung, Export (max. 300 Einträge angezeigt)."
+      />
       <FilterBar resetHref="/admin/audit" defaultOpen={!!(entity || action || q)}>
-        <FilterSelect name="objekt" label="Objekt" value={entity} options={entities.map((e) => ({ value: e.entityType, label: e.entityType }))} />
-        <FilterSelect name="aktion" label="Aktion" value={action} options={Object.entries(ACTIONS).map(([v, l]) => ({ value: v, label: l }))} />
+        <FilterSelect
+          name="objekt"
+          label="Objekt"
+          value={entity}
+          options={entities.map((e) => ({ value: e.entityType, label: e.entityType }))}
+        />
+        <FilterSelect
+          name="aktion"
+          label="Aktion"
+          value={action}
+          options={Object.entries(ACTIONS).map(([v, l]) => ({ value: v, label: l }))}
+        />
         <FilterInput name="q" label="Objekt-ID oder Person" value={q} />
       </FilterBar>
       <Table caption="Audit-Log">
-        <THead><tr><Th>Zeitpunkt</Th><Th>Person</Th><Th>Aktion</Th><Th>Objekt</Th><Th>Details</Th></tr></THead>
+        <THead>
+          <tr>
+            <Th>Zeitpunkt</Th>
+            <Th>Person</Th>
+            <Th>Aktion</Th>
+            <Th>Objekt</Th>
+            <Th>Details</Th>
+          </tr>
+        </THead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.id}>
               <Td className="whitespace-nowrap">{formatDateTime(r.occurredAt)}</Td>
               <Td>{r.actorName ?? "System"}</Td>
               <Td>{ACTIONS[r.action] ?? r.action}</Td>
-              <Td>{r.entityType}<span className="block font-mono text-xs text-ink-muted">{r.entityId}</span></Td>
-              <Td><details><summary className="cursor-pointer text-info">anzeigen</summary><pre className="mt-1 max-w-xl overflow-x-auto rounded bg-slate-50 p-2 text-xs">{JSON.stringify(r.changes ?? r.context, null, 2)}</pre></details></Td>
+              <Td>
+                {r.entityType}
+                <span className="text-ink-muted block font-mono text-xs">{r.entityId}</span>
+              </Td>
+              <Td>
+                <details>
+                  <summary className="text-info cursor-pointer">anzeigen</summary>
+                  <pre className="mt-1 max-w-xl overflow-x-auto rounded bg-slate-50 p-2 text-xs">
+                    {JSON.stringify(r.changes ?? r.context, null, 2)}
+                  </pre>
+                </details>
+              </Td>
             </tr>
           ))}
         </tbody>

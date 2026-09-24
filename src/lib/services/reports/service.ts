@@ -55,7 +55,9 @@ export async function listVersions(tx: Tx, reportId: string): Promise<LatestVers
 }
 
 async function nextVersionNo(tx: Tx, reportId: string): Promise<number> {
-  const [{ n }] = await tx<{ n: number }[]>`select coalesce(max(version_no), 0) + 1 as n from public.report_versions where report_id = ${reportId}`;
+  const [{ n }] = await tx<
+    { n: number }[]
+  >`select coalesce(max(version_no), 0) + 1 as n from public.report_versions where report_id = ${reportId}`;
   return n;
 }
 
@@ -68,7 +70,12 @@ export async function saveDraft(user: CurrentUser, inspectionId: string, texts: 
       await tx`update public.generated_reports set status = 'in_review', released_at = null, released_by = null where id = ${report.id}`;
     }
     const versionNo = await nextVersionNo(tx, report.id);
-    const built = await buildReportContent(tx, inspectionId, { reportNumber: report.reportNumber, versionNo, status: "in_review", ...texts });
+    const built = await buildReportContent(tx, inspectionId, {
+      reportNumber: report.reportNumber,
+      versionNo,
+      status: "in_review",
+      ...texts,
+    });
     if (!built) throw Object.assign(new Error("forbidden"), { code: "42501" });
     const [v] = await tx<{ id: string }[]>`
       insert into public.report_versions (report_id, version_no, content, summary_text, closing_text)
@@ -80,7 +87,11 @@ export async function saveDraft(user: CurrentUser, inspectionId: string, texts: 
 }
 
 /** Live-Vorschau (nicht gespeichert) – z. B. für PDF-Vorschau vor der Freigabe. */
-export async function previewContent(user: CurrentUser, inspectionId: string, texts?: { summaryText?: string | null; closingText?: string | null }) {
+export async function previewContent(
+  user: CurrentUser,
+  inspectionId: string,
+  texts?: { summaryText?: string | null; closingText?: string | null },
+) {
   return withUser(user.id, async (tx) => {
     const report = await getReportForInspection(tx, inspectionId);
     const versions = report ? await listVersions(tx, report.id) : [];
@@ -122,20 +133,31 @@ export async function releaseAndSend(user: CurrentUser, inspectionId: string, re
   const prepared = await withUser(user.id, async (tx) => {
     const report = await ensureReport(tx, inspectionId);
     if (!canEditSite(user.permissions, report.siteId)) throw Object.assign(new Error("forbidden"), { code: "42501" });
-    const [company] = await tx<{ defaultDistribution: string[]; emailSenderName: string | null; name: string; primaryColor: string | null }[]>`
+    const [company] = await tx<
+      { defaultDistribution: string[]; emailSenderName: string | null; name: string; primaryColor: string | null }[]
+    >`
       select default_distribution, email_sender_name, name, primary_color from public.companies where id = ${report.companyId}`;
     const siteMembers = await tx<{ email: string }[]>`
       select p.business_email as email from public.site_memberships m join public.user_profiles p on p.id = m.user_id
       where m.site_id = ${report.siteId} and p.is_active`;
     const errors = checkRecipientPolicy({
-      to: req.to, cc: req.cc, bcc: req.bcc, senderEmail: user.businessEmail, companyDistribution: company.defaultDistribution,
-      siteMemberEmails: siteMembers.map((m) => m.email), mayUseArbitraryRecipients: canSendToArbitraryRecipients(user.permissions, report.companyId),
+      to: req.to,
+      cc: req.cc,
+      bcc: req.bcc,
+      senderEmail: user.businessEmail,
+      companyDistribution: company.defaultDistribution,
+      siteMemberEmails: siteMembers.map((m) => m.email),
+      mayUseArbitraryRecipients: canSendToArbitraryRecipients(user.permissions, report.companyId),
     });
     if (errors.length) throw Object.assign(new Error(errors.join(" ")), { code: "42501", message: `${errors.join(" ")} (Berechtigung)` });
 
     const versionNo = await nextVersionNo(tx, report.id);
     const built = await buildReportContent(tx, inspectionId, {
-      reportNumber: report.reportNumber, versionNo, status: "sent", summaryText: req.summaryText, closingText: req.closingText,
+      reportNumber: report.reportNumber,
+      versionNo,
+      status: "sent",
+      summaryText: req.summaryText,
+      closingText: req.closingText,
     });
     if (!built) throw Object.assign(new Error("forbidden"), { code: "42501" });
     const pdf = await renderReportPdf(built.content);
@@ -171,11 +193,21 @@ async function deliver(
   deliveryId: string,
   m: { pdf: Buffer; filename: string; fromName: string; html: string; req: Pick<SendRequest, "to" | "cc" | "bcc" | "subject" | "body"> },
 ): Promise<{ status: "sent" | "failed"; error?: string }> {
-  await withUser(user.id, (tx) => tx`update public.email_deliveries set status = 'sending', attempts = attempts + 1 where id = ${deliveryId}`);
+  await withUser(
+    user.id,
+    (tx) => tx`update public.email_deliveries set status = 'sending', attempts = attempts + 1 where id = ${deliveryId}`,
+  );
   try {
     const res = await mailer().send({
-      fromName: m.fromName, replyTo: user.businessEmail, to: m.req.to, cc: m.req.cc, bcc: m.req.bcc, subject: m.req.subject,
-      text: m.req.body, html: m.html, attachments: [{ filename: m.filename, content: m.pdf, contentType: "application/pdf" }],
+      fromName: m.fromName,
+      replyTo: user.businessEmail,
+      to: m.req.to,
+      cc: m.req.cc,
+      bcc: m.req.bcc,
+      subject: m.req.subject,
+      text: m.req.body,
+      html: m.html,
+      attachments: [{ filename: m.filename, content: m.pdf, contentType: "application/pdf" }],
     });
     await withUser(user.id, async (tx) => {
       const [d] = await tx<{ reportId: string; companyId: string }[]>`
@@ -203,14 +235,34 @@ async function deliver(
 /** Erneuter Versand eines fehlgeschlagenen Auftrags (Absender oder Admin/IMS der Gesellschaft). */
 export async function retryDelivery(user: CurrentUser, deliveryId: string) {
   const data = await withUser(user.id, async (tx) => {
-    const [d] = await tx<{ id: string; status: string; reportVersionId: string; toAddresses: string[]; ccAddresses: string[]; bccAddresses: string[]; subject: string; bodyText: string; companyId: string }[]>`
+    const [d] = await tx<
+      {
+        id: string;
+        status: string;
+        reportVersionId: string;
+        toAddresses: string[];
+        ccAddresses: string[];
+        bccAddresses: string[];
+        subject: string;
+        bodyText: string;
+        companyId: string;
+      }[]
+    >`
       select id, status, report_version_id, to_addresses, cc_addresses, bcc_addresses, subject, body_text, company_id
       from public.email_deliveries where id = ${deliveryId}
         and (sent_by = app.uid() or company_id = any(${user.permissions.manageable_company_ids}::uuid[]))`;
     if (!d) throw Object.assign(new Error("forbidden"), { code: "42501" });
-    if (d.status !== "failed") throw Object.assign(new Error("Nur fehlgeschlagene Versandaufträge können wiederholt werden."), { code: "23514", message: "Nur fehlgeschlagene Versandaufträge können wiederholt werden." });
-    const [v] = await tx<{ pdfPath: string; content: ReportContent }[]>`select pdf_path, content from public.report_versions where id = ${d.reportVersionId}`;
-    const [c] = await tx<{ name: string; emailSenderName: string | null; primaryColor: string | null }[]>`select name, email_sender_name, primary_color from public.companies where id = ${d.companyId}`;
+    if (d.status !== "failed")
+      throw Object.assign(new Error("Nur fehlgeschlagene Versandaufträge können wiederholt werden."), {
+        code: "23514",
+        message: "Nur fehlgeschlagene Versandaufträge können wiederholt werden.",
+      });
+    const [v] = await tx<
+      { pdfPath: string; content: ReportContent }[]
+    >`select pdf_path, content from public.report_versions where id = ${d.reportVersionId}`;
+    const [c] = await tx<
+      { name: string; emailSenderName: string | null; primaryColor: string | null }[]
+    >`select name, email_sender_name, primary_color from public.companies where id = ${d.companyId}`;
     return { d, v, c };
   });
   const pdf = await storage().get("generated-reports", data.v.pdfPath);
@@ -218,7 +270,11 @@ export async function retryDelivery(user: CurrentUser, deliveryId: string) {
     pdf,
     filename: `${data.v.content.reportNumber}_Baustellenkontrollbericht.pdf`,
     fromName: data.c.emailSenderName ?? data.c.name,
-    html: bodyToHtml(data.d.bodyText, { companyName: data.c.name, primaryColor: data.c.primaryColor, disclaimer: data.v.content.company.disclaimer }),
+    html: bodyToHtml(data.d.bodyText, {
+      companyName: data.c.name,
+      primaryColor: data.c.primaryColor,
+      disclaimer: data.v.content.company.disclaimer,
+    }),
     req: { to: data.d.toAddresses, cc: data.d.ccAddresses, bcc: data.d.bccAddresses, subject: data.d.subject, body: data.d.bodyText },
   });
 }

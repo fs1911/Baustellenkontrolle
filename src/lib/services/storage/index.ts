@@ -82,7 +82,10 @@ class LocalStorage implements StorageAdapter {
   }
   async signedUrl(bucket: Bucket, path: string, opts?: { downloadName?: string; ttlSeconds?: number }): Promise<string> {
     assertSafePath(path);
-    const token = await createFileToken({ bucket, path, downloadName: opts?.downloadName }, opts?.ttlSeconds ?? env().SIGNED_URL_TTL_SECONDS);
+    const token = await createFileToken(
+      { bucket, path, downloadName: opts?.downloadName },
+      opts?.ttlSeconds ?? env().SIGNED_URL_TTL_SECONDS,
+    );
     return `/api/files/${token}`;
   }
 }
@@ -112,7 +115,11 @@ class SupabaseStorage implements StorageAdapter {
     assertSafePath(path);
     const { data, error } = await this.client.storage
       .from(bucket)
-      .createSignedUrl(path, opts?.ttlSeconds ?? env().SIGNED_URL_TTL_SECONDS, opts?.downloadName ? { download: opts.downloadName } : undefined);
+      .createSignedUrl(
+        path,
+        opts?.ttlSeconds ?? env().SIGNED_URL_TTL_SECONDS,
+        opts?.downloadName ? { download: opts.downloadName } : undefined,
+      );
     if (error || !data) throw new Error(`Signierte URL fehlgeschlagen: ${error?.message ?? "leer"}`);
     return data.signedUrl;
   }

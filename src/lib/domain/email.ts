@@ -39,7 +39,9 @@ export function checkRecipientPolicy(p: RecipientPolicyInput): string[] {
     const allowed = new Set([p.senderEmail, ...p.companyDistribution, ...p.siteMemberEmails].map((e) => e.toLowerCase()));
     const notAllowed = all.filter((a) => !allowed.has(a.toLowerCase()));
     if (notAllowed.length > 0) {
-      errors.push(`Keine Berechtigung für freie Empfänger: ${notAllowed.join(", ")}. Erlaubt sind die eigene Adresse, der Standardverteiler und Beteiligte der Baustelle.`);
+      errors.push(
+        `Keine Berechtigung für freie Empfänger: ${notAllowed.join(", ")}. Erlaubt sind die eigene Adresse, der Standardverteiler und Beteiligte der Baustelle.`,
+      );
     }
   }
   return errors;

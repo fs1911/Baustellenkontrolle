@@ -58,7 +58,9 @@ function previousRange(from: string, to: string) {
 }
 
 export async function loadKpis(tx: Tx, f: DashboardFilters): Promise<Kpis> {
-  const [a] = await tx<Omit<Kpis, "deviationsPrev" | "deviationsCurrent" | "recurringClusters" | "inspections" | "completionRate" | "avgDaysToCompletion">[]>`
+  const [a] = await tx<
+    Omit<Kpis, "deviationsPrev" | "deviationsCurrent" | "recurringClusters" | "inspections" | "completionRate" | "avgDaysToCompletion">[]
+  >`
     select count(*)::int as findings,
            count(*) filter (where f.assessment = 'positive')::int as positive,
            count(*) filter (where f.assessment = 'negative')::int as negative,
@@ -104,7 +106,13 @@ export async function loadKpis(tx: Tx, f: DashboardFilters): Promise<Kpis> {
   };
 }
 
-export interface WeeklyPoint { week: string; label: string; negative: number; improvement: number; positive: number }
+export interface WeeklyPoint {
+  week: string;
+  label: string;
+  negative: number;
+  improvement: number;
+  positive: number;
+}
 
 export async function loadWeekly(tx: Tx, f: DashboardFilters): Promise<WeeklyPoint[]> {
   const rows = await tx<{ week: string; assessment: Assessment; n: number }[]>`
@@ -169,7 +177,19 @@ export async function loadRiskMatrix(tx: Tx, f: DashboardFilters) {
     group by 1, 2`;
 }
 
-export interface OverdueRow { actionId: string; findingId: string; inspectionId: string; title: string; description: string; siteName: string; responsible: string | null; dueDate: string; daysOverdue: number; riskLevel: RiskLevel | null; status: ActionStatus }
+export interface OverdueRow {
+  actionId: string;
+  findingId: string;
+  inspectionId: string;
+  title: string;
+  description: string;
+  siteName: string;
+  responsible: string | null;
+  dueDate: string;
+  daysOverdue: number;
+  riskLevel: RiskLevel | null;
+  status: ActionStatus;
+}
 
 export async function loadOverdue(tx: Tx, f: DashboardFilters, limit = 10): Promise<OverdueRow[]> {
   return tx<OverdueRow[]>`
@@ -183,7 +203,18 @@ export async function loadOverdue(tx: Tx, f: DashboardFilters, limit = 10): Prom
 }
 
 export async function loadTopRisks(tx: Tx, f: DashboardFilters, limit = 5) {
-  return tx<{ id: string; inspectionId: string; title: string; siteName: string; riskLevel: RiskLevel; status: ActionStatus; createdAt: Date; overdue: boolean }[]>`
+  return tx<
+    {
+      id: string;
+      inspectionId: string;
+      title: string;
+      siteName: string;
+      riskLevel: RiskLevel;
+      status: ActionStatus;
+      createdAt: Date;
+      overdue: boolean;
+    }[]
+  >`
     select f.id, f.inspection_id, f.title, s.name as site_name, f.risk_level, f.status, f.created_at,
            exists (select 1 from public.corrective_actions ca where ca.finding_id = f.id and ca.status in ('open','in_progress') and ca.due_date < ${tx.unsafe(TODAY)}) as overdue
     from public.findings f join public.inspections i on i.id = f.inspection_id join public.construction_sites s on s.id = f.site_id
@@ -201,7 +232,18 @@ export async function loadTopPositives(tx: Tx, f: DashboardFilters, limit = 5) {
 
 /** Baustellen mit erhöhtem Handlungsbedarf – transparente Punkte: kritisch offen ×4, hoch offen ×3, überfällig ×2, aktive Cluster ×2. */
 export async function loadSitesNeedingAction(tx: Tx, f: DashboardFilters, limit = 5) {
-  return tx<{ siteId: string; siteName: string; companyName: string; criticalOpen: number; highOpen: number; overdue: number; clusters: number; score: number }[]>`
+  return tx<
+    {
+      siteId: string;
+      siteName: string;
+      companyName: string;
+      criticalOpen: number;
+      highOpen: number;
+      overdue: number;
+      clusters: number;
+      score: number;
+    }[]
+  >`
     with base as (
       select f.site_id,
              count(*) filter (where f.risk_level = 'critical' and f.status in ('open','in_progress') and f.assessment <> 'positive')::int as critical_open,
@@ -218,7 +260,19 @@ export async function loadSitesNeedingAction(tx: Tx, f: DashboardFilters, limit 
 }
 
 export async function loadRecurringTop(tx: Tx, f: DashboardFilters, limit = 8) {
-  return tx<{ id: string; scope: string; title: string; insight: string; score: number; memberCount: number; overdueCount: number; siteName: string | null; companyName: string | null }[]>`
+  return tx<
+    {
+      id: string;
+      scope: string;
+      title: string;
+      insight: string;
+      score: number;
+      memberCount: number;
+      overdueCount: number;
+      siteName: string | null;
+      companyName: string | null;
+    }[]
+  >`
     select c.id, c.scope, c.title, c.insight, c.score::float as score, c.member_count, c.overdue_count, s.name as site_name, co.name as company_name
     from public.recurring_issue_clusters c left join public.construction_sites s on s.id = c.site_id left join public.companies co on co.id = c.company_id
     where c.status = 'active'
@@ -233,7 +287,9 @@ export async function loadFilterOptions(tx: Tx) {
     tx<{ id: string; name: string }[]>`select id, name from public.companies where deleted_at is null order by name`,
     tx<{ id: string; name: string }[]>`select id, name from public.construction_sites where deleted_at is null order by name`,
     tx<{ id: string; name: string }[]>`select id, name from public.finding_categories where is_active order by sort_order`,
-    tx<{ id: string; name: string }[]>`select distinct p.id, p.full_name as name from public.inspections i join public.user_profiles p on p.id = i.inspector_id order by name`,
+    tx<
+      { id: string; name: string }[]
+    >`select distinct p.id, p.full_name as name from public.inspections i join public.user_profiles p on p.id = i.inspector_id order by name`,
     tx<{ role: string }[]>`select distinct responsible_role as role from public.findings where responsible_role is not null order by 1`,
   ]);
   return { companies, sites, categories, inspectors, roles: roles.map((r) => r.role) };

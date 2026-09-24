@@ -3,9 +3,18 @@ import { z } from "zod";
 import { ACTION_STATUSES, ASSESSMENTS, INSPECTION_TYPES, RISK_LEVELS } from "./enums";
 
 const optionalText = (max: number) =>
-  z.string().trim().max(max, `Maximal ${max} Zeichen`).optional().nullable().transform((v) => (v ? v : null));
+  z
+    .string()
+    .trim()
+    .max(max, `Maximal ${max} Zeichen`)
+    .optional()
+    .nullable()
+    .transform((v) => (v ? v : null));
 const uuid = z.string().uuid("Ungültige Auswahl");
-const optionalUuid = z.union([uuid, z.literal(""), z.null()]).optional().transform((v) => (v ? v : null));
+const optionalUuid = z
+  .union([uuid, z.literal(""), z.null()])
+  .optional()
+  .transform((v) => (v ? v : null));
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ungültiges Datum");
 
 export const participantSchema = z.object({
@@ -34,7 +43,17 @@ export const siteSchema = z.object({
   street: optionalText(200),
   postalCode: optionalText(10),
   city: optionalText(100),
-  canton: z.union([z.string().trim().regex(/^[A-Z]{2}$/, "Kantonskürzel, z. B. AG"), z.literal(""), z.null()]).optional().transform((v) => (v ? v : null)),
+  canton: z
+    .union([
+      z
+        .string()
+        .trim()
+        .regex(/^[A-Z]{2}$/, "Kantonskürzel, z. B. AG"),
+      z.literal(""),
+      z.null(),
+    ])
+    .optional()
+    .transform((v) => (v ? v : null)),
   projectName: optionalText(200),
 });
 export type SiteInput = z.input<typeof siteSchema>;
@@ -48,7 +67,10 @@ export const findingSchema = z
     assessment: z.enum(ASSESSMENTS, { message: "Bitte Beurteilung wählen" }),
     categoryId: optionalUuid,
     subcategoryId: optionalUuid,
-    riskLevel: z.union([z.enum(RISK_LEVELS), z.literal(""), z.null()]).optional().transform((v) => (v ? v : null)),
+    riskLevel: z
+      .union([z.enum(RISK_LEVELS), z.literal(""), z.null()])
+      .optional()
+      .transform((v) => (v ? v : null)),
     trade: optionalText(120),
     location: optionalText(200),
     responsibleRole: optionalText(120),
@@ -57,8 +79,14 @@ export const findingSchema = z
     aiReferenceIds: z.array(uuid).max(20).default([]),
     actionDescription: optionalText(2000),
     responsiblePerson: optionalText(120),
-    dueDate: z.union([isoDate, z.literal(""), z.null()]).optional().transform((v) => (v ? v : null)),
-    status: z.union([z.enum(ACTION_STATUSES), z.literal(""), z.null()]).optional().transform((v) => (v ? v : null)),
+    dueDate: z
+      .union([isoDate, z.literal(""), z.null()])
+      .optional()
+      .transform((v) => (v ? v : null)),
+    status: z
+      .union([z.enum(ACTION_STATUSES), z.literal(""), z.null()])
+      .optional()
+      .transform((v) => (v ? v : null)),
     completionNote: optionalText(2000),
     aiSuggestionId: optionalUuid,
     aiDecision: z.enum(["accepted", "modified", "rejected"]).optional().nullable(),
@@ -68,11 +96,21 @@ export const findingSchema = z
       ctx.addIssue({ code: "custom", path: ["riskLevel"], message: "Bitte Risikostufe wählen" });
     }
     if (v.assessment !== "positive" && !v.actionDescription) {
-      ctx.addIssue({ code: "custom", path: ["actionDescription"], message: "Bitte eine Massnahme bzw. einen Massnahmenvorschlag erfassen" });
+      ctx.addIssue({
+        code: "custom",
+        path: ["actionDescription"],
+        message: "Bitte eine Massnahme bzw. einen Massnahmenvorschlag erfassen",
+      });
     }
     if (v.assessment === "negative" && v.riskLevel === "critical") {
-      if (!v.categoryId) ctx.addIssue({ code: "custom", path: ["categoryId"], message: "Kritische Abweichung: Kategorie ist erforderlich" });
-      if (!v.responsibleRole) ctx.addIssue({ code: "custom", path: ["responsibleRole"], message: "Kritische Abweichung: verantwortliche Rolle ist erforderlich" });
+      if (!v.categoryId)
+        ctx.addIssue({ code: "custom", path: ["categoryId"], message: "Kritische Abweichung: Kategorie ist erforderlich" });
+      if (!v.responsibleRole)
+        ctx.addIssue({
+          code: "custom",
+          path: ["responsibleRole"],
+          message: "Kritische Abweichung: verantwortliche Rolle ist erforderlich",
+        });
     }
     if ((v.status === "verified" || v.status === "closed") && !v.completionNote) {
       ctx.addIssue({ code: "custom", path: ["completionNote"], message: "Für Verifikation/Abschluss ist eine Bemerkung erforderlich" });

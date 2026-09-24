@@ -10,7 +10,17 @@ const tones: Record<Tone, { cls: string; Icon: typeof Info }> = {
   error: { cls: "border-red-300 bg-negative-soft text-red-950", Icon: AlertOctagon },
 };
 
-export function Alert({ tone = "info", title, children, className }: { tone?: Tone; title?: ReactNode; children?: ReactNode; className?: string }) {
+export function Alert({
+  tone = "info",
+  title,
+  children,
+  className,
+}: {
+  tone?: Tone;
+  title?: ReactNode;
+  children?: ReactNode;
+  className?: string;
+}) {
   const t = tones[tone];
   return (
     <div className={cn("flex gap-3 rounded-lg border-2 px-4 py-3", t.cls, className)} role={tone === "error" ? "alert" : "status"}>
@@ -23,12 +33,22 @@ export function Alert({ tone = "info", title, children, className }: { tone?: To
   );
 }
 
-export function EmptyState({ icon, title, description, action }: { icon?: ReactNode; title: string; description?: ReactNode; action?: ReactNode }) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: {
+  icon?: ReactNode;
+  title: string;
+  description?: ReactNode;
+  action?: ReactNode;
+}) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] border-2 border-dashed border-line-strong bg-white px-6 py-10 text-center">
+    <div className="border-line-strong flex flex-col items-center gap-3 rounded-[var(--radius-card)] border-2 border-dashed bg-white px-6 py-10 text-center">
       {icon && <div className="text-ink-subtle">{icon}</div>}
       <p className="text-lg font-semibold">{title}</p>
-      {description && <p className="max-w-md text-ink-muted">{description}</p>}
+      {description && <p className="text-ink-muted max-w-md">{description}</p>}
       {action}
     </div>
   );
@@ -43,21 +63,33 @@ export function PageSkeleton() {
     <div className="space-y-4" aria-busy aria-label="Inhalt wird geladen">
       <Skeleton className="h-9 w-64" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-24" />)}
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} className="h-24" />
+        ))}
       </div>
       <Skeleton className="h-64" />
     </div>
   );
 }
 
-export function PageHeader({ title, description, actions, back }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; back?: ReactNode }) {
+export function PageHeader({
+  title,
+  description,
+  actions,
+  back,
+}: {
+  title: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+  back?: ReactNode;
+}) {
   return (
     <div className="mb-5 space-y-2">
       {back}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{title}</h1>
-          {description && <p className="mt-1 text-ink-muted">{description}</p>}
+          <h1 className="text-ink text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
+          {description && <p className="text-ink-muted mt-1">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
@@ -70,7 +102,7 @@ export function KeyValue({ items }: { items: { label: string; value: ReactNode }
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
       {items.map((i) => (
         <div key={i.label} className="min-w-0">
-          <dt className="text-sm text-ink-muted">{i.label}</dt>
+          <dt className="text-ink-muted text-sm">{i.label}</dt>
           <dd className="font-medium break-words">{i.value || "–"}</dd>
         </div>
       ))}

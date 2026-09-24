@@ -62,13 +62,23 @@ export function ConnectivityBanner() {
 
   if (online && pending === 0) return null;
   return (
-    <div className="no-print flex flex-wrap items-center justify-between gap-2 bg-improve px-4 py-2 text-sm font-semibold text-white" role="status">
+    <div
+      className="no-print bg-improve flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm font-semibold text-white"
+      role="status"
+    >
       <span className="flex items-center gap-2">
         {!online && <CloudOff className="size-5" aria-hidden />}
-        {!online ? "Offline – neue Erfassungen werden auf dem Gerät gespeichert." : `${pending} Erfassung(en) warten auf Synchronisation${errors ? ` (${errors} mit Fehler)` : ""}.`}
+        {!online
+          ? "Offline – neue Erfassungen werden auf dem Gerät gespeichert."
+          : `${pending} Erfassung(en) warten auf Synchronisation${errors ? ` (${errors} mit Fehler)` : ""}.`}
       </span>
       {online && pending > 0 && (
-        <button type="button" onClick={runSync} disabled={busy} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-white/20 px-3 hover:bg-white/30">
+        <button
+          type="button"
+          onClick={runSync}
+          disabled={busy}
+          className="inline-flex min-h-10 items-center gap-2 rounded-md bg-white/20 px-3 hover:bg-white/30"
+        >
           <RefreshCw className={busy ? "size-4 animate-spin" : "size-4"} aria-hidden /> Jetzt synchronisieren
         </button>
       )}

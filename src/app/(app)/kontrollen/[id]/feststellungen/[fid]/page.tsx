@@ -32,7 +32,14 @@ export default async function FindingPage({ params }: PageProps<"/kontrollen/[id
   return (
     <>
       <PageHeader
-        back={<Link href={`/kontrollen/${i.id}`} className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink"><ChevronLeft className="size-4" aria-hidden /> {i.site.name}</Link>}
+        back={
+          <Link
+            href={`/kontrollen/${i.id}`}
+            className="text-ink-muted hover:text-ink inline-flex min-h-10 items-center gap-1 text-sm font-semibold"
+          >
+            <ChevronLeft className="size-4" aria-hidden /> {i.site.name}
+          </Link>
+        }
         title={`Feststellung ${f.number}`}
         description={`Erfasst ${formatDateTime(f.createdAt)}${f.createdByName ? ` durch ${f.createdByName}` : ""}${f.closedAt ? ` · geschlossen ${formatDateTime(f.closedAt)}` : ""}`}
       />
@@ -44,12 +51,27 @@ export default async function FindingPage({ params }: PageProps<"/kontrollen/[id
         references={data.references}
         existingImages={f.images.map((img) => ({ id: img.id, url: urls.get(img.id)!, caption: img.caption }))}
         defaults={{
-          id: f.id, inspectionId: i.id, title: f.title, description: f.description ?? "", assessment: f.assessment,
-          categoryId: f.categoryId ?? "", subcategoryId: f.subcategoryId ?? "", riskLevel: f.riskLevel ?? "", trade: f.trade ?? "",
-          location: f.location ?? "", responsibleRole: f.responsibleRole ?? action?.responsibleRole ?? "", referenceNote: f.referenceNote ?? "",
-          referenceIds: f.references.map((r) => r.id), aiReferenceIds: f.references.filter((r) => r.suggestedByAi).map((r) => r.id),
-          actionDescription: action?.description ?? "", responsiblePerson: action?.responsiblePerson ?? "", dueDate: action?.dueDate ?? "",
-          status: action?.status ?? null, completionNote: action?.verificationNote ?? action?.completionNote ?? "", aiSuggestionId: null, aiDecision: null,
+          id: f.id,
+          inspectionId: i.id,
+          title: f.title,
+          description: f.description ?? "",
+          assessment: f.assessment,
+          categoryId: f.categoryId ?? "",
+          subcategoryId: f.subcategoryId ?? "",
+          riskLevel: f.riskLevel ?? "",
+          trade: f.trade ?? "",
+          location: f.location ?? "",
+          responsibleRole: f.responsibleRole ?? action?.responsibleRole ?? "",
+          referenceNote: f.referenceNote ?? "",
+          referenceIds: f.references.map((r) => r.id),
+          aiReferenceIds: f.references.filter((r) => r.suggestedByAi).map((r) => r.id),
+          actionDescription: action?.description ?? "",
+          responsiblePerson: action?.responsiblePerson ?? "",
+          dueDate: action?.dueDate ?? "",
+          status: action?.status ?? null,
+          completionNote: action?.verificationNote ?? action?.completionNote ?? "",
+          aiSuggestionId: null,
+          aiDecision: null,
         }}
       />
     </>

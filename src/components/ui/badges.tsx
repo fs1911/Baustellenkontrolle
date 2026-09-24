@@ -1,8 +1,34 @@
-import { AlertOctagon, AlertTriangle, CheckCircle2, CircleDot, Clock, Lightbulb, Loader, ShieldCheck, ThumbsUp, TriangleAlert, XCircle, Archive, Send, FileText, Eye } from "lucide-react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  CheckCircle2,
+  CircleDot,
+  Clock,
+  Lightbulb,
+  Loader,
+  ShieldCheck,
+  ThumbsUp,
+  TriangleAlert,
+  XCircle,
+  Archive,
+  Send,
+  FileText,
+  Eye,
+} from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import {
-  ACTION_STATUS_LABEL, ASSESSMENT_LABEL, INSPECTION_STATUS_LABEL, REPORT_STATUS_LABEL, RISK_LABEL, REVIEW_STATUS_LABEL,
-  type ActionStatus, type Assessment, type InspectionStatus, type ReportStatus, type ReviewStatus, type RiskLevel,
+  ACTION_STATUS_LABEL,
+  ASSESSMENT_LABEL,
+  INSPECTION_STATUS_LABEL,
+  REPORT_STATUS_LABEL,
+  RISK_LABEL,
+  REVIEW_STATUS_LABEL,
+  type ActionStatus,
+  type Assessment,
+  type InspectionStatus,
+  type ReportStatus,
+  type ReviewStatus,
+  type RiskLevel,
 } from "@/lib/domain/enums";
 
 const base = "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-sm font-semibold whitespace-nowrap";
@@ -42,7 +68,7 @@ export function ActionStatusBadge({ value, overdue, className }: { value: Action
   if (!value) return null;
   if (overdue) {
     return (
-      <span className={cn(base, "bg-negative text-white border-red-900", className)}>
+      <span className={cn(base, "bg-negative border-red-900 text-white", className)}>
         <Clock className="size-4" aria-hidden />
         Überfällig · {ACTION_STATUS_LABEL[value]}
       </span>
@@ -117,5 +143,5 @@ export function AiBadge({ className }: { className?: string }) {
 }
 
 export function Tag({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <span className={cn(base, "border-line bg-slate-50 font-medium text-ink-muted", className)}>{children}</span>;
+  return <span className={cn(base, "border-line text-ink-muted bg-slate-50 font-medium", className)}>{children}</span>;
 }

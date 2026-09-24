@@ -10,13 +10,16 @@ interface SpeechRecognitionLike {
   interimResults: boolean;
   start(): void;
   stop(): void;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> ; resultIndex: number }) => void) | null;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }>; resultIndex: number }) => void) | null;
   onend: (() => void) | null;
   onerror: (() => void) | null;
 }
 
 function getRecognition(): SpeechRecognitionLike | null {
-  const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike };
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  };
   const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
   return Ctor ? new Ctor() : null;
 }
@@ -58,8 +61,17 @@ export function VoiceButton({ onText, label = "Diktieren" }: { onText: (text: st
   };
 
   return (
-    <button type="button" onClick={toggle} aria-pressed={listening}
-      className={cn("inline-flex min-h-12 items-center gap-2 rounded-lg border-2 px-3 font-semibold", listening ? "animate-pulse border-negative bg-negative-soft text-negative" : "border-line-strong bg-white text-ink hover:bg-slate-50")}>
+    <button
+      type="button"
+      onClick={toggle}
+      aria-pressed={listening}
+      className={cn(
+        "inline-flex min-h-12 items-center gap-2 rounded-lg border-2 px-3 font-semibold",
+        listening
+          ? "border-negative bg-negative-soft text-negative animate-pulse"
+          : "border-line-strong text-ink bg-white hover:bg-slate-50",
+      )}
+    >
       {listening ? <MicOff className="size-5" aria-hidden /> : <Mic className="size-5" aria-hidden />}
       {listening ? "Aufnahme stoppen" : label}
     </button>

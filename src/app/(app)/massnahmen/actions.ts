@@ -7,7 +7,11 @@ import { actionUpdateSchema } from "@/lib/domain/validation";
 import { toUserError, type ActionResult } from "@/lib/utils/errors";
 
 /** Statuswechsel einer Massnahme inkl. Verlaufseintrag. Poliere: nur in Bearbeitung/behoben (DB-Trigger erzwingt dies). */
-export async function updateActionStatusAction(input: { actionId: string; status: string; comment?: string | null }): Promise<ActionResult<{ updateId: string }>> {
+export async function updateActionStatusAction(input: {
+  actionId: string;
+  status: string;
+  comment?: string | null;
+}): Promise<ActionResult<{ updateId: string }>> {
   const user = await requireUser();
   try {
     const d = actionUpdateSchema.parse(input);

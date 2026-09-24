@@ -41,7 +41,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   ref,
 ) {
   return (
-    <button ref={ref} type={type} className={buttonClasses(variant, size, className)} disabled={disabled || loading} aria-busy={loading || undefined} {...props}>
+    <button
+      ref={ref}
+      type={type}
+      className={buttonClasses(variant, size, className)}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
       {loading && <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />}
       {children}
     </button>
@@ -54,7 +61,14 @@ export function ButtonLink({
   className,
   children,
   ...props
-}: LinkProps & { variant?: Variant; size?: Size; className?: string; children: React.ReactNode; "aria-label"?: string; prefetch?: boolean }) {
+}: LinkProps & {
+  variant?: Variant;
+  size?: Size;
+  className?: string;
+  children: React.ReactNode;
+  "aria-label"?: string;
+  prefetch?: boolean;
+}) {
   return (
     <Link className={buttonClasses(variant, size, className)} {...props}>
       {children}

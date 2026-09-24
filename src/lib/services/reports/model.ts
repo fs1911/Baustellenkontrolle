@@ -4,8 +4,17 @@ import { getInspection, formatSiteAddress } from "@/lib/repositories/inspections
 import { listFindingsForInspection } from "@/lib/repositories/findings";
 import { loadSettings } from "@/lib/repositories/settings";
 import {
-  ACTION_STATUS_LABEL, ASSESSMENT_LABEL, INSPECTION_TYPE_LABEL, REFERENCE_TYPE_LABEL, REVIEW_STATUS_LABEL, RISK_LABEL, RISK_WEIGHT,
-  type ActionStatus, type Assessment, type ReportStatus, type RiskLevel,
+  ACTION_STATUS_LABEL,
+  ASSESSMENT_LABEL,
+  INSPECTION_TYPE_LABEL,
+  REFERENCE_TYPE_LABEL,
+  REVIEW_STATUS_LABEL,
+  RISK_LABEL,
+  RISK_WEIGHT,
+  type ActionStatus,
+  type Assessment,
+  type ReportStatus,
+  type RiskLevel,
 } from "@/lib/domain/enums";
 import type { SummaryInput } from "@/lib/domain/summary";
 import { formatDate, formatDateTime, todayIso } from "@/lib/utils/format";
@@ -136,7 +145,9 @@ export async function buildReportContent(
       statusLabel: f.status ? ACTION_STATUS_LABEL[f.status] : null,
       overdue,
       references: f.references.map((r) => ({
-        label: r.code.startsWith(REFERENCE_TYPE_LABEL[r.referenceType].split(" ")[0]) ? `${r.code} – ${r.title}` : `${REFERENCE_TYPE_LABEL[r.referenceType]}: ${r.code} – ${r.title}`,
+        label: r.code.startsWith(REFERENCE_TYPE_LABEL[r.referenceType].split(" ")[0])
+          ? `${r.code} – ${r.title}`
+          : `${REFERENCE_TYPE_LABEL[r.referenceType]}: ${r.code} – ${r.title}`,
         reviewNote: r.reviewStatus === "approved" ? null : REVIEW_STATUS_LABEL[r.reviewStatus],
       })),
       recurring: rec ? { score: rec.score, text: rec.insight } : null,
@@ -189,8 +200,13 @@ export async function buildReportContent(
     inspectionType: INSPECTION_TYPE_LABEL[i.inspectionType],
     inspectionDate: formatDate(i.inspectedAt),
     counts: {
-      total: counts.total, positive: counts.positive, negative: counts.negative, improvement: counts.improvement,
-      criticalOrHigh: counts.criticalOrHigh, openActions: counts.openActions, recurring: counts.recurring,
+      total: counts.total,
+      positive: counts.positive,
+      negative: counts.negative,
+      improvement: counts.improvement,
+      criticalOrHigh: counts.criticalOrHigh,
+      openActions: counts.openActions,
+      recurring: counts.recurring,
     },
     topCategories: Array.from(catCounts, ([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
     criticalItems: deviations

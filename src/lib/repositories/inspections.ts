@@ -167,7 +167,12 @@ export async function getInspection(tx: Tx, id: string): Promise<InspectionDetai
     },
     participants,
     report: r.rId
-      ? { id: r.rId as string, status: r.rStatus as ReportStatus, reportNumber: r.rReportNumber as string, currentVersionId: (r.rCurrentVersionId as string | null) ?? null }
+      ? {
+          id: r.rId as string,
+          status: r.rStatus as ReportStatus,
+          reportNumber: r.rReportNumber as string,
+          currentVersionId: (r.rCurrentVersionId as string | null) ?? null,
+        }
       : null,
   };
 }

@@ -27,7 +27,9 @@ export async function POST(request: Request) {
   const input = parsed.data;
   try {
     const out = await withUser(user.id, async (tx) => {
-      const [insp] = await tx<{ id: string }[]>`select id from public.inspections where id = ${input.inspectionId} and site_id = any(${user.permissions.edit_site_ids}::uuid[])`;
+      const [insp] = await tx<
+        { id: string }[]
+      >`select id from public.inspections where id = ${input.inspectionId} and site_id = any(${user.permissions.edit_site_ids}::uuid[])`;
       if (!insp) return null;
       const [catalog, settings] = await Promise.all([loadClassifierCatalog(tx), loadSettings(tx)]);
       const result = await suggestClassification({ title: input.title, description: input.description }, catalog, settings);
@@ -39,7 +41,14 @@ export async function POST(request: Request) {
         ? await tx<{ id: string; code: string; title: string; reviewStatus: string }[]>`
             select id, code, title, review_status from public.legal_references where id = any(${result.value.referenceIds}::uuid[])`
         : [];
-      return { suggestionId: row.id, suggestion: result.value, provider: result.provider, mode: describeAiMode(settings), fallbackReason: result.fallbackReason ?? null, references: refs };
+      return {
+        suggestionId: row.id,
+        suggestion: result.value,
+        provider: result.provider,
+        mode: describeAiMode(settings),
+        fallbackReason: result.fallbackReason ?? null,
+        references: refs,
+      };
     });
     if (!out) return NextResponse.json({ error: "Keine Berechtigung." }, { status: 403 });
     return NextResponse.json(out);

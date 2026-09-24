@@ -51,8 +51,18 @@ export async function runRetention(opts: { execute: boolean; actorId: string }):
       files: imgs.length * 2 + reports.length,
     };
     if (opts.execute) {
-      await storage().remove("finding-images", imgs.flatMap((i) => [i.storagePath, i.thumbnailPath].filter((p): p is string => !!p))).catch(() => {});
-      await storage().remove("generated-reports", reports.map((x) => x.pdfPath)).catch(() => {});
+      await storage()
+        .remove(
+          "finding-images",
+          imgs.flatMap((i) => [i.storagePath, i.thumbnailPath].filter((p): p is string => !!p)),
+        )
+        .catch(() => {});
+      await storage()
+        .remove(
+          "generated-reports",
+          reports.map((x) => x.pdfPath),
+        )
+        .catch(() => {});
       await tx`delete from public.finding_images where id = any(${imgs.map((i) => i.id)}::uuid[])`;
       await tx`delete from public.email_deliveries where created_at < now() - make_interval(years => ${r.emailLogYears})`;
       await tx`delete from public.email_deliveries where report_id in (select id from public.generated_reports where inspection_id = any(${inspIds}::uuid[]))`;

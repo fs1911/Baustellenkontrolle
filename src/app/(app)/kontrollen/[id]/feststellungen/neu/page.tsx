@@ -25,7 +25,14 @@ export default async function NewFindingPage({ params }: PageProps<"/kontrollen/
   return (
     <>
       <PageHeader
-        back={<Link href={`/kontrollen/${i.id}`} className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink"><ChevronLeft className="size-4" aria-hidden /> {i.site.name}</Link>}
+        back={
+          <Link
+            href={`/kontrollen/${i.id}`}
+            className="text-ink-muted hover:text-ink inline-flex min-h-10 items-center gap-1 text-sm font-semibold"
+          >
+            <ChevronLeft className="size-4" aria-hidden /> {i.site.name}
+          </Link>
+        }
         title="Feststellung erfassen"
         description={`${i.company.name} · ${i.site.name}`}
       />
@@ -34,9 +41,27 @@ export default async function NewFindingPage({ params }: PageProps<"/kontrollen/
         catalog={data.catalog}
         references={data.references}
         defaults={{
-          id: null, inspectionId: i.id, title: "", description: "", assessment: undefined as never, categoryId: "", subcategoryId: "", riskLevel: "",
-          trade: i.area ?? "", location: "", responsibleRole: "", referenceNote: "", referenceIds: [], aiReferenceIds: [],
-          actionDescription: "", responsiblePerson: "", dueDate: "", status: null, completionNote: "", aiSuggestionId: null, aiDecision: null,
+          id: null,
+          inspectionId: i.id,
+          title: "",
+          description: "",
+          assessment: undefined as never,
+          categoryId: "",
+          subcategoryId: "",
+          riskLevel: "",
+          trade: i.area ?? "",
+          location: "",
+          responsibleRole: "",
+          referenceNote: "",
+          referenceIds: [],
+          aiReferenceIds: [],
+          actionDescription: "",
+          responsiblePerson: "",
+          dueDate: "",
+          status: null,
+          completionNote: "",
+          aiSuggestionId: null,
+          aiDecision: null,
         }}
       />
     </>

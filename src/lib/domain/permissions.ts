@@ -49,8 +49,7 @@ export function canWorkSite(p: Permissions, siteId: string): boolean {
 
 export function canCreateSite(p: Permissions, companyId: string): boolean {
   return (
-    p.manageable_company_ids.includes(companyId) ||
-    p.company_roles.some((r) => r.company_id === companyId && r.role === "project_manager")
+    p.manageable_company_ids.includes(companyId) || p.company_roles.some((r) => r.company_id === companyId && r.role === "project_manager")
   );
 }
 

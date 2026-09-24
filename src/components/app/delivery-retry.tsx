@@ -9,10 +9,12 @@ export function DeliveryRetry({ deliveryId, inspectionId }: { deliveryId: string
   const toast = useToast();
   const router = useRouter();
   return (
-    <RetryButton onRetry={async () => {
-      const r = await retryDeliveryAction(deliveryId, inspectionId);
-      toast(r.ok ? r.message ?? "Gesendet." : r.error, r.ok ? "success" : "error");
-      router.refresh();
-    }} />
+    <RetryButton
+      onRetry={async () => {
+        const r = await retryDeliveryAction(deliveryId, inspectionId);
+        toast(r.ok ? (r.message ?? "Gesendet.") : r.error, r.ok ? "success" : "error");
+        router.refresh();
+      }}
+    />
   );
 }

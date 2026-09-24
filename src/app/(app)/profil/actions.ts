@@ -8,8 +8,18 @@ import { toUserError, type ActionResult } from "@/lib/utils/errors";
 
 const schema = z.object({
   fullName: z.string().trim().min(2).max(120),
-  jobTitle: z.string().trim().max(120).optional().transform((v) => v || null),
-  phone: z.string().trim().max(40).optional().transform((v) => v || null),
+  jobTitle: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((v) => v || null),
+  phone: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((v) => v || null),
   emailOnAssignment: z.boolean(),
   emailOnOverdue: z.boolean(),
   weeklyDigest: z.boolean(),

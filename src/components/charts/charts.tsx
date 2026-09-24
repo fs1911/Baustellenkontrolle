@@ -24,43 +24,104 @@ const axisProps = { tick: { fill: CHART.axis, fontSize: 12 }, axisLine: { stroke
 function TableFallback({ caption, head, rows }: { caption: string; head: string[]; rows: (string | number)[][] }) {
   return (
     <details className="mt-2 text-sm">
-      <summary className="min-h-10 cursor-pointer font-semibold text-info">Als Tabelle anzeigen</summary>
+      <summary className="text-info min-h-10 cursor-pointer font-semibold">Als Tabelle anzeigen</summary>
       <div className="mt-2 overflow-x-auto">
-      <table className="w-full text-left">
-        <caption className="sr-only">{caption}</caption>
-        <thead><tr>{head.map((h) => <th key={h} className="border-b border-line p-1.5">{h}</th>)}</tr></thead>
-        <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j} className="border-b border-line p-1.5">{c}</td>)}</tr>)}</tbody>
-      </table>
+        <table className="w-full text-left">
+          <caption className="sr-only">{caption}</caption>
+          <thead>
+            <tr>
+              {head.map((h) => (
+                <th key={h} className="border-line border-b p-1.5">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                {r.map((c, j) => (
+                  <td key={j} className="border-line border-b p-1.5">
+                    {c}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </details>
   );
 }
 
-export function WeeklyAssessmentChart({ data, drillBase }: { data: { week: string; label: string; negative: number; improvement: number; positive: number }[]; drillBase: string }) {
+export function WeeklyAssessmentChart({
+  data,
+  drillBase,
+}: {
+  data: { week: string; label: string; negative: number; improvement: number; positive: number }[];
+  drillBase: string;
+}) {
   const router = useRouter();
   return (
     <div>
       <div className="h-64" role="img" aria-label="Feststellungen pro Woche nach Beurteilung">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap="20%"
-            onClick={(s) => { const w = (s as { activeLabel?: string })?.activeLabel; const p = data.find((d) => d.label === w); if (p) router.push(`${drillBase}&von=${p.week}`); }}>
+          <BarChart
+            data={data}
+            margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+            barCategoryGap="20%"
+            onClick={(s) => {
+              const w = (s as { activeLabel?: string })?.activeLabel;
+              const p = data.find((d) => d.label === w);
+              if (p) router.push(`${drillBase}&von=${p.week}`);
+            }}
+          >
             <CartesianGrid stroke={CHART.grid} vertical={false} />
             <XAxis dataKey="label" {...axisProps} interval="preserveStartEnd" />
             <YAxis allowDecimals={false} {...axisProps} />
             <Tooltip cursor={{ fill: "rgba(15,23,42,0.06)" }} />
             <Legend wrapperStyle={{ fontSize: 13 }} />
             <Bar dataKey="negative" name="Abweichungen" stackId="a" fill={CHART.negative} stroke="#fff" strokeWidth={2} cursor="pointer" />
-            <Bar dataKey="improvement" name="Verbesserungen" stackId="a" fill={CHART.improvement} stroke="#fff" strokeWidth={2} cursor="pointer" />
-            <Bar dataKey="positive" name="Positiv" stackId="a" fill={CHART.positive} stroke="#fff" strokeWidth={2} radius={[4, 4, 0, 0]} cursor="pointer" />
+            <Bar
+              dataKey="improvement"
+              name="Verbesserungen"
+              stackId="a"
+              fill={CHART.improvement}
+              stroke="#fff"
+              strokeWidth={2}
+              cursor="pointer"
+            />
+            <Bar
+              dataKey="positive"
+              name="Positiv"
+              stackId="a"
+              fill={CHART.positive}
+              stroke="#fff"
+              strokeWidth={2}
+              radius={[4, 4, 0, 0]}
+              cursor="pointer"
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <TableFallback caption="Feststellungen pro Woche" head={["Woche ab", "Abweichungen", "Verbesserungen", "Positiv"]} rows={data.map((d) => [d.label, d.negative, d.improvement, d.positive])} />
+      <TableFallback
+        caption="Feststellungen pro Woche"
+        head={["Woche ab", "Abweichungen", "Verbesserungen", "Positiv"]}
+        rows={data.map((d) => [d.label, d.negative, d.improvement, d.positive])}
+      />
     </div>
   );
 }
 
-export function HorizontalBarChart({ data, label, hrefs }: { data: { id: string; name: string; n: number }[]; label: string; hrefs: Record<string, string> }) {
+export function HorizontalBarChart({
+  data,
+  label,
+  hrefs,
+}: {
+  data: { id: string; name: string; n: number }[];
+  label: string;
+  hrefs: Record<string, string>;
+}) {
   const router = useRouter();
   const height = Math.max(160, data.length * 34 + 20);
   return (
@@ -72,9 +133,19 @@ export function HorizontalBarChart({ data, label, hrefs }: { data: { id: string;
             <XAxis type="number" allowDecimals={false} {...axisProps} />
             <YAxis type="category" dataKey="name" width={170} {...axisProps} tick={{ fill: "#111827", fontSize: 12 }} />
             <Tooltip cursor={{ fill: "rgba(15,23,42,0.06)" }} formatter={(v) => [v, "Anzahl"]} />
-            <Bar dataKey="n" name="Anzahl" fill={CHART.series1} radius={[0, 4, 4, 0]} barSize={18} cursor="pointer"
+            <Bar
+              dataKey="n"
+              name="Anzahl"
+              fill={CHART.series1}
+              radius={[0, 4, 4, 0]}
+              barSize={18}
+              cursor="pointer"
               label={{ position: "right", fill: "#111827", fontSize: 12 }}
-              onClick={(d) => { const h = hrefs[(d as unknown as { id: string }).id]; if (h) router.push(h); }} />
+              onClick={(d) => {
+                const h = hrefs[(d as unknown as { id: string }).id];
+                if (h) router.push(h);
+              }}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -83,31 +154,73 @@ export function HorizontalBarChart({ data, label, hrefs }: { data: { id: string;
   );
 }
 
-export function CompanyAssessmentChart({ data, hrefs }: { data: { id: string; name: string; shortCode: string; negative: number; improvement: number; positive: number }[]; hrefs: Record<string, string> }) {
+export function CompanyAssessmentChart({
+  data,
+  hrefs,
+}: {
+  data: { id: string; name: string; shortCode: string; negative: number; improvement: number; positive: number }[];
+  hrefs: Record<string, string>;
+}) {
   const router = useRouter();
   return (
     <div>
       <div className="h-64" role="img" aria-label="Beurteilungen nach Gesellschaft">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap="30%"
-            onClick={(s) => { const i = (s as { activeTooltipIndex?: number })?.activeTooltipIndex; if (typeof i === "number" && data[i] && hrefs[data[i].id]) router.push(hrefs[data[i].id]); }}>
+          <BarChart
+            data={data}
+            margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+            barCategoryGap="30%"
+            onClick={(s) => {
+              const i = (s as { activeTooltipIndex?: number })?.activeTooltipIndex;
+              if (typeof i === "number" && data[i] && hrefs[data[i].id]) router.push(hrefs[data[i].id]);
+            }}
+          >
             <CartesianGrid stroke={CHART.grid} vertical={false} />
             <XAxis dataKey="shortCode" {...axisProps} />
             <YAxis allowDecimals={false} {...axisProps} />
             <Tooltip labelFormatter={(l) => data.find((d) => d.shortCode === l)?.name ?? l} cursor={{ fill: "rgba(15,23,42,0.06)" }} />
             <Legend wrapperStyle={{ fontSize: 13 }} />
             <Bar dataKey="negative" name="Abweichungen" stackId="a" fill={CHART.negative} stroke="#fff" strokeWidth={2} cursor="pointer" />
-            <Bar dataKey="improvement" name="Verbesserungen" stackId="a" fill={CHART.improvement} stroke="#fff" strokeWidth={2} cursor="pointer" />
-            <Bar dataKey="positive" name="Positiv" stackId="a" fill={CHART.positive} stroke="#fff" strokeWidth={2} radius={[4, 4, 0, 0]} cursor="pointer" />
+            <Bar
+              dataKey="improvement"
+              name="Verbesserungen"
+              stackId="a"
+              fill={CHART.improvement}
+              stroke="#fff"
+              strokeWidth={2}
+              cursor="pointer"
+            />
+            <Bar
+              dataKey="positive"
+              name="Positiv"
+              stackId="a"
+              fill={CHART.positive}
+              stroke="#fff"
+              strokeWidth={2}
+              radius={[4, 4, 0, 0]}
+              cursor="pointer"
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <TableFallback caption="Beurteilungen nach Gesellschaft" head={["Gesellschaft", "Abweichungen", "Verbesserungen", "Positiv"]} rows={data.map((d) => [d.name, d.negative, d.improvement, d.positive])} />
+      <TableFallback
+        caption="Beurteilungen nach Gesellschaft"
+        head={["Gesellschaft", "Abweichungen", "Verbesserungen", "Positiv"]}
+        rows={data.map((d) => [d.name, d.negative, d.improvement, d.positive])}
+      />
     </div>
   );
 }
 
-export function TwoLineChart({ data, aLabel, bLabel }: { data: { label: string; a: number; b: number }[]; aLabel: string; bLabel: string }) {
+export function TwoLineChart({
+  data,
+  aLabel,
+  bLabel,
+}: {
+  data: { label: string; a: number; b: number }[];
+  aLabel: string;
+  bLabel: string;
+}) {
   return (
     <div>
       <div className="h-64" role="img" aria-label={`${aLabel} und ${bLabel} pro Monat`}>
@@ -119,7 +232,16 @@ export function TwoLineChart({ data, aLabel, bLabel }: { data: { label: string; 
             <Tooltip />
             <Legend wrapperStyle={{ fontSize: 13 }} />
             <Line type="monotone" dataKey="a" name={aLabel} stroke={CHART.series1} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-            <Line type="monotone" dataKey="b" name={bLabel} stroke={CHART.series2} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} strokeDasharray="6 3" />
+            <Line
+              type="monotone"
+              dataKey="b"
+              name={bLabel}
+              stroke={CHART.series2}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+              strokeDasharray="6 3"
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>

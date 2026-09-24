@@ -9,5 +9,7 @@ export async function GET(request: Request) {
   const id = new URL(request.url).searchParams.get("id") ?? "";
   const eml = await readSandboxMail(id);
   if (!eml) return new Response("Nicht gefunden", { status: 404 });
-  return new Response(new Uint8Array(eml), { headers: { "Content-Type": "message/rfc822", "Content-Disposition": `attachment; filename="${id}.eml"` } });
+  return new Response(new Uint8Array(eml), {
+    headers: { "Content-Type": "message/rfc822", "Content-Disposition": `attachment; filename="${id}.eml"` },
+  });
 }

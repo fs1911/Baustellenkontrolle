@@ -7,7 +7,10 @@ const PAGES = ["/dashboard", "/kontrollen", "/kontrollen/neu", "/massnahmen", "/
 test("Anmeldeseite ohne schwere Barrierefreiheitsfehler", async ({ page }) => {
   await page.goto("/login");
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
-  expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical"), JSON.stringify(r.violations, null, 2)).toEqual([]);
+  expect(
+    r.violations.filter((v) => v.impact === "serious" || v.impact === "critical"),
+    JSON.stringify(r.violations, null, 2),
+  ).toEqual([]);
 });
 
 for (const path of PAGES) {

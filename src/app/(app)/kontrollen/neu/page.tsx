@@ -13,13 +13,17 @@ export const metadata: Metadata = { title: "Neue Kontrolle" };
 export default async function NewInspectionPage() {
   const user = await requireUser();
   const p = user.permissions;
-  const creatableCompanyIds = Array.from(new Set([...p.manageable_company_ids, ...p.company_roles.filter((r) => r.role === "project_manager").map((r) => r.company_id)]));
+  const creatableCompanyIds = Array.from(
+    new Set([...p.manageable_company_ids, ...p.company_roles.filter((r) => r.role === "project_manager").map((r) => r.company_id)]),
+  );
   if (!canCreateInspections(p) && creatableCompanyIds.length === 0) redirect("/kontrollen");
   const { sites, companies, templates } = await withUser(user.id, async (tx) => ({
     ...(await loadInspectionTargets(tx, p.edit_site_ids)),
     templates: await listTemplates(tx),
   }));
-  const defaultCompany = companies.find((c) => c.id === user.defaultCompanyId && (sites.some((s) => s.companyId === c.id) || creatableCompanyIds.includes(c.id)));
+  const defaultCompany = companies.find(
+    (c) => c.id === user.defaultCompanyId && (sites.some((s) => s.companyId === c.id) || creatableCompanyIds.includes(c.id)),
+  );
   return (
     <>
       <PageHeader title="Neue Kontrolle" description="Gesellschaft und Baustelle wählen, danach Feststellungen erfassen." />

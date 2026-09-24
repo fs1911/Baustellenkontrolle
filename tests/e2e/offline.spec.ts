@@ -4,7 +4,10 @@ import { login, testImage, USERS } from "./helpers";
 test("Offline erfasste Feststellung wird nach Wiederverbindung synchronisiert", async ({ page, context }) => {
   await login(page, USERS.sibe);
   await page.goto("/kontrollen?q=Zürich");
-  await page.getByRole("link", { name: /Mehrfamilienhaus Zürich Nord/ }).first().click();
+  await page
+    .getByRole("link", { name: /Mehrfamilienhaus Zürich Nord/ })
+    .first()
+    .click();
   await page.getByRole("link", { name: "Schnellerfassung", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Schnellerfassung" })).toBeVisible();
 

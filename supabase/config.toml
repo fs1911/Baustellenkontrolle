@@ -1,0 +1,33 @@
+# Supabase CLI – lokale Entwicklung (optional; die App läuft lokal auch mit docker-compose.yml).
+project_id = "baustellenkontrolle"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 15
+
+[storage]
+enabled = true
+file_size_limit = "15MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+enable_signup = false
+
+[auth.mfa]
+max_enrolled_factors = 10
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.external.azure]
+enabled = false
+client_id = "env(AZURE_CLIENT_ID)"
+secret = "env(AZURE_CLIENT_SECRET)"
+url = "env(AZURE_TENANT_URL)"

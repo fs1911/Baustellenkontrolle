@@ -77,8 +77,19 @@ export const ROLE_LABEL: Record<AppRole, string> = {
 };
 
 export const REFERENCE_TYPES = [
-  "bauav", "vuv", "argv", "ekas", "suva_checklist", "suva_vital_rule",
-  "iso_45001", "iso_9001", "iso_14001", "sia", "internal", "project", "other",
+  "bauav",
+  "vuv",
+  "argv",
+  "ekas",
+  "suva_checklist",
+  "suva_vital_rule",
+  "iso_45001",
+  "iso_9001",
+  "iso_14001",
+  "sia",
+  "internal",
+  "project",
+  "other",
 ] as const;
 export type ReferenceType = (typeof REFERENCE_TYPES)[number];
 export const REFERENCE_TYPE_LABEL: Record<ReferenceType, string> = {

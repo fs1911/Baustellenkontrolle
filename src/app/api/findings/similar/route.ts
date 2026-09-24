@@ -26,19 +26,38 @@ export async function GET(request: Request) {
   if (!q.success) return NextResponse.json({ similar: [], recurrence: null });
   const p = q.data;
   const result = await withUser(user.id, async (tx) => {
-    const similar = await findSimilar(tx, { text: p.text, categoryId: p.categoryId || null, siteId: p.siteId || null, excludeId: p.excludeId || null });
+    const similar = await findSimilar(tx, {
+      text: p.text,
+      categoryId: p.categoryId || null,
+      siteId: p.siteId || null,
+      excludeId: p.excludeId || null,
+    });
     let recurrence = null;
     if (p.siteId && (p.assessment === "negative" || p.assessment === "improvement")) {
       const settings = await loadSettings(tx);
       const history = await loadAnalysisFindings(tx, settings["recurrence.scoring"].windowDays + 1);
       const site = history.find((h) => h.siteId === p.siteId);
       const target: AnalysisFinding = {
-        id: p.excludeId || "draft", companyId: site?.companyId ?? "", companyName: site?.companyName ?? "", siteId: p.siteId,
-        siteName: site?.siteName ?? "diese Baustelle", projectId: site?.projectId ?? null, categoryId: p.categoryId || null, categoryName: null,
-        subcategoryId: p.subcategoryId || null, subcategoryName: history.find((h) => h.subcategoryId === p.subcategoryId)?.subcategoryName ?? null,
-        assessment: p.assessment, riskLevel: (["low", "medium", "high", "critical"].includes(p.riskLevel ?? "") ? p.riskLevel : null) as AnalysisFinding["riskLevel"],
-        responsibleRole: p.responsibleRole || null, trade: null, title: p.text.slice(0, 200), description: p.text, status: "open",
-        createdAt: new Date(), overdue: false, completedLate: false,
+        id: p.excludeId || "draft",
+        companyId: site?.companyId ?? "",
+        companyName: site?.companyName ?? "",
+        siteId: p.siteId,
+        siteName: site?.siteName ?? "diese Baustelle",
+        projectId: site?.projectId ?? null,
+        categoryId: p.categoryId || null,
+        categoryName: null,
+        subcategoryId: p.subcategoryId || null,
+        subcategoryName: history.find((h) => h.subcategoryId === p.subcategoryId)?.subcategoryName ?? null,
+        assessment: p.assessment,
+        riskLevel: (["low", "medium", "high", "critical"].includes(p.riskLevel ?? "") ? p.riskLevel : null) as AnalysisFinding["riskLevel"],
+        responsibleRole: p.responsibleRole || null,
+        trade: null,
+        title: p.text.slice(0, 200),
+        description: p.text,
+        status: "open",
+        createdAt: new Date(),
+        overdue: false,
+        completedLate: false,
       };
       recurrence = scoreFinding(target, history, settings["recurrence.scoring"]);
     }

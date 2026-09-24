@@ -53,8 +53,10 @@ const schema = z
     }
     if (env.APP_ENV === "production") {
       if (env.AUTH_PROVIDER === "local") ctx.addIssue({ code: "custom", message: "In Produktion ist AUTH_PROVIDER=supabase erforderlich" });
-      if (env.MAIL_PROVIDER === "sandbox") ctx.addIssue({ code: "custom", message: "In Produktion ist ein echter MAIL_PROVIDER erforderlich" });
-      if (env.STORAGE_PROVIDER === "local") ctx.addIssue({ code: "custom", message: "In Produktion ist STORAGE_PROVIDER=supabase erforderlich" });
+      if (env.MAIL_PROVIDER === "sandbox")
+        ctx.addIssue({ code: "custom", message: "In Produktion ist ein echter MAIL_PROVIDER erforderlich" });
+      if (env.STORAGE_PROVIDER === "local")
+        ctx.addIssue({ code: "custom", message: "In Produktion ist STORAGE_PROVIDER=supabase erforderlich" });
     }
   });
 

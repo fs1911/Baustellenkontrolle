@@ -104,10 +104,7 @@ export function scoreFinding(
 
   const candidates = history.filter(
     (h) =>
-      h.id !== target.id &&
-      isDeviation(h) &&
-      h.createdAt.getTime() >= windowStart &&
-      h.createdAt.getTime() <= target.createdAt.getTime(),
+      h.id !== target.id && isDeviation(h) && h.createdAt.getTime() >= windowStart && h.createdAt.getTime() <= target.createdAt.getTime(),
   );
 
   const related = candidates
@@ -131,14 +128,22 @@ export function scoreFinding(
 
   const sameSubCount = related.filter((r) => r.sameSub).length;
   if (sameSubCount > 0) {
-    add("same_subcategory", "Gleiche Unterkategorie", config.sameSubcategory,
-      `${sameSubCount} Feststellung(en) mit Unterkategorie «${target.subcategoryName ?? "–"}» in den letzten ${config.windowDays} Tagen`);
+    add(
+      "same_subcategory",
+      "Gleiche Unterkategorie",
+      config.sameSubcategory,
+      `${sameSubCount} Feststellung(en) mit Unterkategorie «${target.subcategoryName ?? "–"}» in den letzten ${config.windowDays} Tagen`,
+    );
   }
   const similar = related.filter((r) => r.similar);
   if (similar.length > 0) {
     const best = Math.max(...similar.map((r) => r.similarity));
-    add("similar_text", "Ähnliche Beschreibung", config.similarText,
-      `${similar.length} Feststellung(en) mit ähnlichem Wortlaut (höchste Übereinstimmung ${Math.round(best * 100)} %)`);
+    add(
+      "similar_text",
+      "Ähnliche Beschreibung",
+      config.similarText,
+      `${similar.length} Feststellung(en) mit ähnlichem Wortlaut (höchste Übereinstimmung ${Math.round(best * 100)} %)`,
+    );
   }
   const sameSite = related.filter((r) => r.h.siteId === target.siteId);
   if (sameSite.length > 0) {
@@ -154,17 +159,27 @@ export function scoreFinding(
   }
   if (target.trade) {
     const sameTrade = related.filter((r) => norm(r.h.trade) === norm(target.trade));
-    if (sameTrade.length > 0) add("same_trade", "Gleicher Bereich / Gewerk", config.sameTrade, `${sameTrade.length} im Bereich «${target.trade}»`);
+    if (sameTrade.length > 0)
+      add("same_trade", "Gleicher Bereich / Gewerk", config.sameTrade, `${sameTrade.length} im Bereich «${target.trade}»`);
   }
   if (target.responsibleRole) {
     const sameRole = related.filter((r) => norm(r.h.responsibleRole) === norm(target.responsibleRole));
     if (sameRole.length > 0) {
-      add("same_role", "Gleiche Verantwortungsrolle", config.sameResponsibleRole,
-        `${sameRole.length} mit Verantwortungsrolle «${target.responsibleRole}» (Rolle, nicht Person)`);
+      add(
+        "same_role",
+        "Gleiche Verantwortungsrolle",
+        config.sameResponsibleRole,
+        `${sameRole.length} mit Verantwortungsrolle «${target.responsibleRole}» (Rolle, nicht Person)`,
+      );
     }
   }
   if (target.riskLevel === "high" || target.riskLevel === "critical") {
-    add("high_risk", "Hohe/kritische Risikostufe", config.highRisk, `Risikostufe der aktuellen Feststellung: ${target.riskLevel === "critical" ? "kritisch" : "hoch"}`);
+    add(
+      "high_risk",
+      "Hohe/kritische Risikostufe",
+      config.highRisk,
+      `Risikostufe der aktuellen Feststellung: ${target.riskLevel === "critical" ? "kritisch" : "hoch"}`,
+    );
   }
   const overdueCount = related.filter((r) => r.h.overdue).length + (target.overdue ? 1 : 0);
   if (overdueCount > 0) {
@@ -172,8 +187,12 @@ export function scoreFinding(
   }
   const additional = Math.min(related.length - 1, config.maxAdditional);
   if (additional > 0) {
-    add("additional", "Weitere ähnliche Feststellungen", additional * config.perAdditional,
-      `+${config.perAdditional} je weitere ähnliche Feststellung (${additional})`);
+    add(
+      "additional",
+      "Weitere ähnliche Feststellungen",
+      additional * config.perAdditional,
+      `+${config.perAdditional} je weitere ähnliche Feststellung (${additional})`,
+    );
   }
 
   const score = items.reduce((s, i) => s + i.points, 0);
@@ -275,7 +294,11 @@ function dominantShare(values: (string | null)[]): { value: string | null; share
   }
   let best: string | null = null;
   let max = 0;
-  for (const [k, c] of counts) if (c > max) { best = k; max = c; }
+  for (const [k, c] of counts)
+    if (c > max) {
+      best = k;
+      max = c;
+    }
   const original = values.find((v) => norm(v) === best) ?? null;
   return { value: original, share: values.length ? max / values.length : 0 };
 }
@@ -287,17 +310,32 @@ function scoreCluster(members: AnalysisFinding[], keyedBySubcategory: boolean, s
   };
   const n = members.length;
   if (keyedBySubcategory) {
-    add("same_subcategory", "Gleiche Unterkategorie", config.sameSubcategory, `${n} Feststellungen derselben Unterkategorie innerhalb von ${config.windowDays} Tagen`);
+    add(
+      "same_subcategory",
+      "Gleiche Unterkategorie",
+      config.sameSubcategory,
+      `${n} Feststellungen derselben Unterkategorie innerhalb von ${config.windowDays} Tagen`,
+    );
   }
   const { mean, perMember } = avgPairSimilarity(members);
   const maxSim = Math.max(0, ...Object.values(perMember));
   if (maxSim >= config.similarityThreshold) {
-    add("similar_text", "Ähnliche Beschreibung", config.similarText, `Textähnlichkeit bis ${Math.round(maxSim * 100)} % (Durchschnitt ${Math.round(mean * 100)} %)`);
+    add(
+      "similar_text",
+      "Ähnliche Beschreibung",
+      config.similarText,
+      `Textähnlichkeit bis ${Math.round(maxSim * 100)} % (Durchschnitt ${Math.round(mean * 100)} %)`,
+    );
   }
   if (sameSite) add("same_site", "Gleiche Baustelle", config.sameSite, "Alle Feststellungen betreffen dieselbe Baustelle");
   const role = dominantShare(members.map((m) => m.responsibleRole));
   if (role.value && role.share >= 0.5 && n >= 2) {
-    add("same_role", "Wiederkehrende Verantwortungsrolle", config.sameResponsibleRole, `${Math.round(role.share * 100)} % mit Rolle «${role.value}» (Rolle, nicht Person)`);
+    add(
+      "same_role",
+      "Wiederkehrende Verantwortungsrolle",
+      config.sameResponsibleRole,
+      `${Math.round(role.share * 100)} % mit Rolle «${role.value}» (Rolle, nicht Person)`,
+    );
   }
   const trade = dominantShare(members.map((m) => m.trade));
   if (trade.value && trade.share >= 0.5 && n >= 2) {
@@ -308,7 +346,8 @@ function scoreCluster(members: AnalysisFinding[], keyedBySubcategory: boolean, s
   const overdue = members.filter((m) => m.overdue).length;
   if (overdue > 0) add("overdue", "Überfällige Massnahmen", config.overdueAction, `${overdue} Massnahme(n) überfällig`);
   const additional = Math.min(n - 1, config.maxAdditional);
-  if (additional > 0) add("additional", "Häufigkeit", additional * config.perAdditional, `+${config.perAdditional} je weitere Feststellung (${additional})`);
+  if (additional > 0)
+    add("additional", "Häufigkeit", additional * config.perAdditional, `+${config.perAdditional} je weitere Feststellung (${additional})`);
   const score = items.reduce((s, i) => s + i.points, 0);
   return { items, score, perMember, overdue };
 }
@@ -319,11 +358,7 @@ function timeBounds(members: AnalysisFinding[]) {
 }
 
 /** Bildet Cluster auf Ebene Baustelle, Gesellschaft (systemisch) und Gruppe. */
-export function buildClusters(
-  findings: AnalysisFinding[],
-  now: Date,
-  config: ScoringConfig = DEFAULT_SCORING_CONFIG,
-): Cluster[] {
+export function buildClusters(findings: AnalysisFinding[], now: Date, config: ScoringConfig = DEFAULT_SCORING_CONFIG): Cluster[] {
   const windowStart = now.getTime() - config.windowDays * DAY_MS;
   const relevant = findings.filter((f) => isDeviation(f) && f.createdAt.getTime() >= windowStart && f.createdAt.getTime() <= now.getTime());
   const clusters: Cluster[] = [];
@@ -338,22 +373,32 @@ export function buildClusters(
     const first = members[0];
     const keyedBySub = key.includes("|sub:");
     const { items, score, perMember, overdue } = scoreCluster(members, keyedBySub, true, config);
-    const topic = keyedBySub ? `${first.categoryName ?? "Kategorie"} – ${first.subcategoryName}` : first.categoryName ?? "Ohne Kategorie";
+    const topic = keyedBySub ? `${first.categoryName ?? "Kategorie"} – ${first.subcategoryName}` : (first.categoryName ?? "Ohne Kategorie");
     const { first: firstSeen, last } = timeBounds(members);
     const priority = priorityFor(score, config);
     clusters.push({
-      key, scope: "site",
-      companyId: first.companyId, companyName: first.companyName,
-      siteId: first.siteId, siteName: first.siteName,
-      categoryId: first.categoryId, categoryName: first.categoryName,
-      subcategoryId: keyedBySub ? first.subcategoryId : null, subcategoryName: keyedBySub ? first.subcategoryName : null,
+      key,
+      scope: "site",
+      companyId: first.companyId,
+      companyName: first.companyName,
+      siteId: first.siteId,
+      siteName: first.siteName,
+      categoryId: first.categoryId,
+      categoryName: first.categoryName,
+      subcategoryId: keyedBySub ? first.subcategoryId : null,
+      subcategoryName: keyedBySub ? first.subcategoryName : null,
       title: topic,
       insight: `«${topic}» wurde auf der Baustelle «${first.siteName}» in den letzten ${config.windowDays} Tagen ${members.length}-mal als Abweichung bzw. Verbesserungsmöglichkeit festgestellt.`,
       recommendation: recommendationFor(priority),
-      score, priority, items,
-      memberIds: members.map((m) => m.id), memberSimilarity: perMember,
+      score,
+      priority,
+      items,
+      memberIds: members.map((m) => m.id),
+      memberSimilarity: perMember,
       openCount: members.filter((m) => m.status === "open" || m.status === "in_progress").length,
-      overdueCount: overdue, firstSeenAt: firstSeen, lastSeenAt: last,
+      overdueCount: overdue,
+      firstSeenAt: firstSeen,
+      lastSeenAt: last,
     });
   }
 
@@ -364,19 +409,37 @@ export function buildClusters(
     if (sites.size < 2 || members.length < Math.max(3, config.minClusterSize)) continue;
     const first = members[0];
     const { items, score, perMember, overdue } = scoreCluster(members, false, false, config);
-    items.unshift({ criterion: "multi_site", label: "Mehrere Baustellen", points: 0, detail: `Betrifft ${sites.size} Baustellen derselben Gesellschaft` });
+    items.unshift({
+      criterion: "multi_site",
+      label: "Mehrere Baustellen",
+      points: 0,
+      detail: `Betrifft ${sites.size} Baustellen derselben Gesellschaft`,
+    });
     const { first: firstSeen, last } = timeBounds(members);
     const priority = priorityFor(score, config);
     clusters.push({
-      key, scope: "company",
-      companyId: first.companyId, companyName: first.companyName, siteId: null, siteName: null,
-      categoryId: first.categoryId, categoryName: first.categoryName, subcategoryId: null, subcategoryName: null,
+      key,
+      scope: "company",
+      companyId: first.companyId,
+      companyName: first.companyName,
+      siteId: null,
+      siteName: null,
+      categoryId: first.categoryId,
+      categoryName: first.categoryName,
+      subcategoryId: null,
+      subcategoryName: null,
       title: `${first.categoryName} – ${first.companyName}`,
       insight: `Bei «${first.companyName}» wurde «${first.categoryName}» in den letzten ${config.windowDays} Tagen auf ${sites.size} Baustellen insgesamt ${members.length}-mal festgestellt. Dies deutet auf ein baustellenübergreifendes Thema hin.`,
       recommendation: recommendationFor(priority),
-      score, priority, items, memberIds: members.map((m) => m.id), memberSimilarity: perMember,
+      score,
+      priority,
+      items,
+      memberIds: members.map((m) => m.id),
+      memberSimilarity: perMember,
       openCount: members.filter((m) => m.status === "open" || m.status === "in_progress").length,
-      overdueCount: overdue, firstSeenAt: firstSeen, lastSeenAt: last,
+      overdueCount: overdue,
+      firstSeenAt: firstSeen,
+      lastSeenAt: last,
     });
   }
 
@@ -387,19 +450,37 @@ export function buildClusters(
     if (companies.size < 2 || members.length < Math.max(4, config.minClusterSize)) continue;
     const first = members[0];
     const { items, score, perMember, overdue } = scoreCluster(members, false, false, config);
-    items.unshift({ criterion: "multi_company", label: "Mehrere Gesellschaften", points: 0, detail: `Betrifft ${companies.size} Gesellschaften` });
+    items.unshift({
+      criterion: "multi_company",
+      label: "Mehrere Gesellschaften",
+      points: 0,
+      detail: `Betrifft ${companies.size} Gesellschaften`,
+    });
     const { first: firstSeen, last } = timeBounds(members);
     const priority = priorityFor(score, config);
     clusters.push({
-      key, scope: "group",
-      companyId: null, companyName: null, siteId: null, siteName: null,
-      categoryId: first.categoryId, categoryName: first.categoryName, subcategoryId: null, subcategoryName: null,
+      key,
+      scope: "group",
+      companyId: null,
+      companyName: null,
+      siteId: null,
+      siteName: null,
+      categoryId: first.categoryId,
+      categoryName: first.categoryName,
+      subcategoryId: null,
+      subcategoryName: null,
       title: `${first.categoryName} – gruppenweit`,
       insight: `«${first.categoryName}» wurde in den letzten ${config.windowDays} Tagen bei ${companies.size} Gesellschaften insgesamt ${members.length}-mal festgestellt.`,
       recommendation: recommendationFor(priority),
-      score, priority, items, memberIds: members.map((m) => m.id), memberSimilarity: perMember,
+      score,
+      priority,
+      items,
+      memberIds: members.map((m) => m.id),
+      memberSimilarity: perMember,
       openCount: members.filter((m) => m.status === "open" || m.status === "in_progress").length,
-      overdueCount: overdue, firstSeenAt: firstSeen, lastSeenAt: last,
+      overdueCount: overdue,
+      firstSeenAt: firstSeen,
+      lastSeenAt: last,
     });
   }
 
@@ -422,7 +503,11 @@ export function buildInsights(findings: AnalysisFinding[], now: Date, config: Sc
         title: `Verspätete Massnahmen: ${name}`,
         text: `Die Massnahmen zur Kategorie «${name}» werden häufig verspätet abgeschlossen (${late} von ${withDeadline.length}, ${Math.round((late / withDeadline.length) * 100)} %).`,
         recommendation: "Empfehlung: Realistische Fristen und Verantwortlichkeiten prüfen, Umsetzung in Baustellensitzungen nachverfolgen.",
-        criteria: ["Massnahme überfällig oder nach Frist erledigt", `Betrachtungszeitraum ${config.windowDays * 2} Tage`, "Mindestens 3 Massnahmen, Anteil ≥ 40 %"],
+        criteria: [
+          "Massnahme überfällig oder nach Frist erledigt",
+          `Betrachtungszeitraum ${config.windowDays * 2} Tage`,
+          "Mindestens 3 Massnahmen, Anteil ≥ 40 %",
+        ],
         companyId: null,
         categoryId: members[0].categoryId,
       });
@@ -444,7 +529,11 @@ export function buildInsights(findings: AnalysisFinding[], now: Date, config: Sc
             title: `Offene Abweichungen: ${f.categoryName} bei ${f.companyName}`,
             text: `Bei «${f.companyName}» treten überdurchschnittlich viele offene Abweichungen in der Kategorie «${f.categoryName}» auf (${compMembers.length} gegenüber durchschnittlich ${avg.toFixed(1)} je Gesellschaft).`,
             recommendation: "Empfehlung: Ursachenanalyse und gezielte Instruktion bzw. Toolbox-Meeting prüfen.",
-            criteria: ["Status offen oder in Bearbeitung", "Vergleich mit dem Durchschnitt aller Gesellschaften", "Schwelle: ≥ 150 % des Durchschnitts und mindestens 3"],
+            criteria: [
+              "Status offen oder in Bearbeitung",
+              "Vergleich mit dem Durchschnitt aller Gesellschaften",
+              "Schwelle: ≥ 150 % des Durchschnitts und mindestens 3",
+            ],
             companyId: f.companyId,
             categoryId: f.categoryId,
           });

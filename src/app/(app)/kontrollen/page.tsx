@@ -38,14 +38,40 @@ export default async function InspectionsPage({ searchParams }: PageProps<"/kont
       <PageHeader
         title="Kontrollen"
         description={`${rows.length} Kontrolle(n)`}
-        actions={canCreate && <ButtonLink href="/kontrollen/neu" size="lg"><Plus className="size-5" aria-hidden /> Neue Kontrolle</ButtonLink>}
+        actions={
+          canCreate && (
+            <ButtonLink href="/kontrollen/neu" size="lg">
+              <Plus className="size-5" aria-hidden /> Neue Kontrolle
+            </ButtonLink>
+          )
+        }
       />
       <FilterBar resetHref="/kontrollen" defaultOpen={Object.values(filters).some(Boolean)}>
         <FilterInput name="q" label="Suche" value={filters.q} placeholder="Baustelle, Nummer, Bereich" />
-        <FilterSelect name="gesellschaft" label="Gesellschaft" value={filters.companyId} options={companies.map((c) => ({ value: c.id, label: c.name }))} />
-        <FilterSelect name="baustelle" label="Baustelle" value={filters.siteId} options={sites.map((s) => ({ value: s.id, label: s.name }))} />
-        <FilterSelect name="status" label="Status" value={filters.status} options={INSPECTION_STATUSES.map((s) => ({ value: s, label: INSPECTION_STATUS_LABEL[s] }))} />
-        <FilterSelect name="typ" label="Kontrolltyp" value={filters.type} options={INSPECTION_TYPES.map((t) => ({ value: t, label: INSPECTION_TYPE_LABEL[t] }))} />
+        <FilterSelect
+          name="gesellschaft"
+          label="Gesellschaft"
+          value={filters.companyId}
+          options={companies.map((c) => ({ value: c.id, label: c.name }))}
+        />
+        <FilterSelect
+          name="baustelle"
+          label="Baustelle"
+          value={filters.siteId}
+          options={sites.map((s) => ({ value: s.id, label: s.name }))}
+        />
+        <FilterSelect
+          name="status"
+          label="Status"
+          value={filters.status}
+          options={INSPECTION_STATUSES.map((s) => ({ value: s, label: INSPECTION_STATUS_LABEL[s] }))}
+        />
+        <FilterSelect
+          name="typ"
+          label="Kontrolltyp"
+          value={filters.type}
+          options={INSPECTION_TYPES.map((t) => ({ value: t, label: INSPECTION_TYPE_LABEL[t] }))}
+        />
         <FilterInput name="von" label="Von" type="date" value={filters.from} />
         <FilterInput name="bis" label="Bis" type="date" value={filters.to} />
       </FilterBar>
@@ -54,25 +80,49 @@ export default async function InspectionsPage({ searchParams }: PageProps<"/kont
         <EmptyState
           icon={<ClipboardCheck className="size-12" aria-hidden />}
           title="Keine Kontrollen gefunden"
-          description={canCreate ? "Starten Sie eine neue Baustellenkontrolle oder passen Sie die Filter an." : "Für Ihre Filter bzw. Berechtigung sind keine Kontrollen vorhanden."}
-          action={canCreate && <ButtonLink href="/kontrollen/neu"><Plus className="size-5" aria-hidden /> Neue Kontrolle</ButtonLink>}
+          description={
+            canCreate
+              ? "Starten Sie eine neue Baustellenkontrolle oder passen Sie die Filter an."
+              : "Für Ihre Filter bzw. Berechtigung sind keine Kontrollen vorhanden."
+          }
+          action={
+            canCreate && (
+              <ButtonLink href="/kontrollen/neu">
+                <Plus className="size-5" aria-hidden /> Neue Kontrolle
+              </ButtonLink>
+            )
+          }
         />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {rows.map((r) => (
             <li key={r.id} className="min-w-0">
-              <Link href={`/kontrollen/${r.id}`} className="block rounded-[var(--radius-card)] border border-line bg-white p-4 shadow-[var(--shadow-card)] hover:border-line-strong focus-visible:border-info">
+              <Link
+                href={`/kontrollen/${r.id}`}
+                className="border-line hover:border-line-strong focus-visible:border-info block rounded-[var(--radius-card)] border bg-white p-4 shadow-[var(--shadow-card)]"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate text-lg font-semibold">{r.siteName}</p>
-                    <p className="text-sm text-ink-muted">{r.siteNumber} · {r.companyName}</p>
+                    <p className="text-ink-muted text-sm">
+                      {r.siteNumber} · {r.companyName}
+                    </p>
                   </div>
                   <InspectionStatusBadge value={r.status} />
                 </div>
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
-                  <span className="flex items-center gap-1"><CalendarDays className="size-4" aria-hidden />{formatDateTime(r.inspectedAt)}</span>
-                  <span className="flex items-center gap-1"><MapPin className="size-4" aria-hidden />{INSPECTION_TYPE_LABEL[r.inspectionType]}</span>
-                  <span className="flex items-center gap-1"><User className="size-4" aria-hidden />{r.inspectorName}</span>
+                <div className="text-ink-muted mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  <span className="flex items-center gap-1">
+                    <CalendarDays className="size-4" aria-hidden />
+                    {formatDateTime(r.inspectedAt)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="size-4" aria-hidden />
+                    {INSPECTION_TYPE_LABEL[r.inspectionType]}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <User className="size-4" aria-hidden />
+                    {r.inspectorName}
+                  </span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Tag className="text-positive">{r.positiveCount} positiv</Tag>

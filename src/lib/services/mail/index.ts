@@ -34,7 +34,10 @@ export interface MailAdapter {
 }
 
 export class MailDeliveryError extends Error {
-  constructor(message: string, readonly retryable: boolean) {
+  constructor(
+    message: string,
+    readonly retryable: boolean,
+  ) {
     super(message);
   }
 }
@@ -51,7 +54,19 @@ class SandboxMailer implements MailAdapter {
     await writeFile(join(dir, `${id}.eml`), info.message as Buffer);
     await writeFile(
       join(dir, `${id}.json`),
-      JSON.stringify({ id, to: message.to, cc: message.cc, bcc: message.bcc, subject: message.subject, attachments: message.attachments.map((a) => ({ filename: a.filename, size: a.content.byteLength })), createdAt: new Date().toISOString() }, null, 2),
+      JSON.stringify(
+        {
+          id,
+          to: message.to,
+          cc: message.cc,
+          bcc: message.bcc,
+          subject: message.subject,
+          attachments: message.attachments.map((a) => ({ filename: a.filename, size: a.content.byteLength })),
+          createdAt: new Date().toISOString(),
+        },
+        null,
+        2,
+      ),
     );
     return { provider: this.name, messageId: info.messageId ?? id };
   }
@@ -110,7 +125,10 @@ class GraphMailer implements MailAdapter {
   async send(message: MailMessage): Promise<MailResult> {
     const total = message.attachments.reduce((s, a) => s + a.content.byteLength, 0);
     if (total > 3 * 1024 * 1024) {
-      throw new MailDeliveryError("Anhang grösser als 3 MB – für Graph ist ein Upload-Session-Versand nötig (siehe docs/email-integration.md).", false);
+      throw new MailDeliveryError(
+        "Anhang grösser als 3 MB – für Graph ist ein Upload-Session-Versand nötig (siehe docs/email-integration.md).",
+        false,
+      );
     }
     const token = await this.accessToken();
     const addr = (list: string[]) => list.map((address) => ({ emailAddress: { address } }));
@@ -137,7 +155,10 @@ class GraphMailer implements MailAdapter {
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
-      throw new MailDeliveryError(`Graph-Versand fehlgeschlagen (${res.status}): ${detail.slice(0, 300)}`, res.status === 429 || res.status >= 500);
+      throw new MailDeliveryError(
+        `Graph-Versand fehlgeschlagen (${res.status}): ${detail.slice(0, 300)}`,
+        res.status === 429 || res.status >= 500,
+      );
     }
     return { provider: this.name, messageId: res.headers.get("request-id") ?? randomUUID() };
   }
@@ -180,7 +201,11 @@ export async function listSandboxMails(limit = 50): Promise<SandboxMailEntry[]> 
   const dir = resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR);
   let files: string[] = [];
   try {
-    files = (await readdir(dir)).filter((f) => f.endsWith(".json")).sort().reverse().slice(0, limit);
+    files = (await readdir(dir))
+      .filter((f) => f.endsWith(".json"))
+      .sort()
+      .reverse()
+      .slice(0, limit);
   } catch {
     return [];
   }

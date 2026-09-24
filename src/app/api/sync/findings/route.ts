@@ -38,7 +38,11 @@ export async function POST(request: Request) {
       const findingId = await saveFinding(tx, parsed.data, { clientRef: clientRef.data });
       for (let i = 0; i < images.length; i++) {
         const ref = z.string().uuid().safeParse(imageIds[i]);
-        await addFindingImage(tx, findingId, { data: Buffer.from(await images[i].arrayBuffer()), caption: captions[i] || null, clientRef: ref.success ? ref.data : null });
+        await addFindingImage(tx, findingId, {
+          data: Buffer.from(await images[i].arrayBuffer()),
+          caption: captions[i] || null,
+          clientRef: ref.success ? ref.data : null,
+        });
       }
       return findingId;
     });

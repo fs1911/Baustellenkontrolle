@@ -10,12 +10,16 @@ import { ReportDocument, type ReportAssets } from "./report-document";
 export async function renderReportPdf(content: ReportContent): Promise<Buffer> {
   const assets: ReportAssets = { logo: null, images: {} };
   if (content.company.logoPath) {
-    assets.logo = await storage().get("company-logos", content.company.logoPath).catch(() => null);
+    assets.logo = await storage()
+      .get("company-logos", content.company.logoPath)
+      .catch(() => null);
   }
   const paths = content.findings.flatMap((f) => f.images.map((i) => i.path));
   await Promise.all(
     paths.map(async (p) => {
-      const buf = await storage().get("finding-images", p).catch(() => null);
+      const buf = await storage()
+        .get("finding-images", p)
+        .catch(() => null);
       if (buf) assets.images[p] = buf;
     }),
   );

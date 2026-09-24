@@ -5,39 +5,77 @@ import { Button, ButtonLink } from "@/components/ui/button";
 /** GET-Formular für Filter (funktioniert ohne JavaScript, Werte bleiben in der URL teilbar). */
 export function FilterBar({ children, resetHref, defaultOpen = false }: { children: ReactNode; resetHref: string; defaultOpen?: boolean }) {
   return (
-    <details className="group mb-5 rounded-[var(--radius-card)] border border-line bg-white" open={defaultOpen}>
+    <details className="group border-line mb-5 rounded-[var(--radius-card)] border bg-white" open={defaultOpen}>
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 font-semibold">
         <Filter className="size-5" aria-hidden /> Filter
-        <span className="ml-auto text-sm font-normal text-ink-muted group-open:hidden">anzeigen</span>
+        <span className="text-ink-muted ml-auto text-sm font-normal group-open:hidden">anzeigen</span>
       </summary>
-      <form method="get" className="grid gap-3 border-t border-line p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <form method="get" className="border-line grid gap-3 border-t p-4 sm:grid-cols-2 lg:grid-cols-4">
         {children}
         <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
           <Button type="submit">Anwenden</Button>
-          <ButtonLink href={resetHref} variant="outline">Zurücksetzen</ButtonLink>
+          <ButtonLink href={resetHref} variant="outline">
+            Zurücksetzen
+          </ButtonLink>
         </div>
       </form>
     </details>
   );
 }
 
-export function FilterSelect({ name, label, value, options }: { name: string; label: string; value?: string; options: { value: string; label: string }[] }) {
+export function FilterSelect({
+  name,
+  label,
+  value,
+  options,
+}: {
+  name: string;
+  label: string;
+  value?: string;
+  options: { value: string; label: string }[];
+}) {
   return (
     <label className="space-y-1 text-sm font-semibold">
       <span>{label}</span>
-      <select name={name} defaultValue={value ?? ""} className="block min-h-12 w-full rounded-lg border-2 border-line-strong bg-white px-3 text-base font-normal">
+      <select
+        name={name}
+        defaultValue={value ?? ""}
+        className="border-line-strong block min-h-12 w-full rounded-lg border-2 bg-white px-3 text-base font-normal"
+      >
         <option value="">Alle</option>
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
       </select>
     </label>
   );
 }
 
-export function FilterInput({ name, label, value, type = "text", placeholder }: { name: string; label: string; value?: string; type?: string; placeholder?: string }) {
+export function FilterInput({
+  name,
+  label,
+  value,
+  type = "text",
+  placeholder,
+}: {
+  name: string;
+  label: string;
+  value?: string;
+  type?: string;
+  placeholder?: string;
+}) {
   return (
     <label className="space-y-1 text-sm font-semibold">
       <span>{label}</span>
-      <input name={name} type={type} defaultValue={value ?? ""} placeholder={placeholder} className="block min-h-12 w-full rounded-lg border-2 border-line-strong bg-white px-3 text-base font-normal" />
+      <input
+        name={name}
+        type={type}
+        defaultValue={value ?? ""}
+        placeholder={placeholder}
+        className="border-line-strong block min-h-12 w-full rounded-lg border-2 bg-white px-3 text-base font-normal"
+      />
     </label>
   );
 }
@@ -53,7 +91,11 @@ export function uuidParam(sp: Record<string, string | string[] | undefined>, key
   return v && /^[0-9a-f-]{36}$/i.test(v) ? v : undefined;
 }
 
-export function enumParam<T extends string>(sp: Record<string, string | string[] | undefined>, key: string, allowed: readonly T[]): T | undefined {
+export function enumParam<T extends string>(
+  sp: Record<string, string | string[] | undefined>,
+  key: string,
+  allowed: readonly T[],
+): T | undefined {
   const v = param(sp, key);
   return v && (allowed as readonly string[]).includes(v) ? (v as T) : undefined;
 }

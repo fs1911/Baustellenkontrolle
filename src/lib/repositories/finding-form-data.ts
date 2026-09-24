@@ -15,7 +15,9 @@ export async function loadFindingFormData(tx: Tx): Promise<{ catalog: CatalogOpt
       name: c.name,
       sampleAction: c.sampleAction,
       referenceIds: mappings.filter((m) => m.categoryId === c.id).map((m) => m.legalReferenceId),
-      subcategories: subcategories.filter((s) => s.categoryId === c.id).map((s) => ({ id: s.id, name: s.name, sampleAction: s.sampleAction })),
+      subcategories: subcategories
+        .filter((s) => s.categoryId === c.id)
+        .map((s) => ({ id: s.id, name: s.name, sampleAction: s.sampleAction })),
     })),
     references: refs
       .filter((r) => r.reviewStatus !== "retired")

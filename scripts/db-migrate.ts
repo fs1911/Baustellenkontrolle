@@ -20,7 +20,9 @@ async function main() {
       version text primary key, applied_at timestamptz not null default now())`;
     const applied = new Set((await sql<{ version: string }[]>`select version from app.schema_migrations`).map((r) => r.version));
     const dir = join(process.cwd(), "supabase", "migrations");
-    const files = readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
+    const files = readdirSync(dir)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
     for (const file of files) {
       const version = file.replace(/\.sql$/, "");
       if (applied.has(version)) continue;

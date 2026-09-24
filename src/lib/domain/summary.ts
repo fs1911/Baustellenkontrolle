@@ -29,7 +29,10 @@ export function buildRuleSummary(s: SummaryInput): string {
     `Anlässlich der ${s.inspectionType} vom ${s.inspectionDate} auf der Baustelle «${s.siteName}» ${s.counts.total === 1 ? "wurde" : "wurden"} ${plural(s.counts.total, "Feststellung", "Feststellungen")} dokumentiert: ${plural(s.counts.positive, "positive Feststellung", "positive Feststellungen")}, ${plural(s.counts.negative, "Abweichung", "Abweichungen")} und ${plural(s.counts.improvement, "Verbesserungsmöglichkeit", "Verbesserungsmöglichkeiten")}.`,
   );
   if (s.counts.criticalOrHigh > 0) {
-    const items = s.criticalItems.slice(0, 3).map((c) => `«${c.title}»`).join(", ");
+    const items = s.criticalItems
+      .slice(0, 3)
+      .map((c) => `«${c.title}»`)
+      .join(", ");
     parts.push(
       `${plural(s.counts.criticalOrHigh, "Feststellung weist", "Feststellungen weisen")} eine hohe oder kritische Risikostufe auf${items ? ` (u. a. ${items})` : ""}; diese sind prioritär zu behandeln.`,
     );
@@ -37,7 +40,12 @@ export function buildRuleSummary(s: SummaryInput): string {
     parts.push("Es wurden keine Abweichungen mit hoher oder kritischer Risikostufe festgestellt.");
   }
   if (s.topCategories.length > 0) {
-    parts.push(`Schwerpunkte der Abweichungen: ${s.topCategories.slice(0, 3).map((c) => `${c.name} (${c.count})`).join(", ")}.`);
+    parts.push(
+      `Schwerpunkte der Abweichungen: ${s.topCategories
+        .slice(0, 3)
+        .map((c) => `${c.name} (${c.count})`)
+        .join(", ")}.`,
+    );
   }
   if (s.counts.recurring > 0) {
     parts.push(
@@ -50,7 +58,12 @@ export function buildRuleSummary(s: SummaryInput): string {
     parts.push("Alle Massnahmen sind umgesetzt oder abgeschlossen.");
   }
   if (s.positiveHighlights.length > 0) {
-    parts.push(`Positiv hervorzuheben: ${s.positiveHighlights.slice(0, 2).map((p) => `«${p}»`).join(" und ")}.`);
+    parts.push(
+      `Positiv hervorzuheben: ${s.positiveHighlights
+        .slice(0, 2)
+        .map((p) => `«${p}»`)
+        .join(" und ")}.`,
+    );
   }
   return parts.join(" ");
 }

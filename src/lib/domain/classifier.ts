@@ -46,23 +46,84 @@ export interface ClassificationSuggestion {
 }
 
 const NEGATIVE_CUES = [
-  "fehlt", "fehlen", "fehlend", "fehlende", "fehlender", "mangelhaft", "ungenügend", "ungesichert", "defekt",
-  "beschädigt", "nicht gesichert", "nicht getragen", "nicht vorhanden", "nicht korrekt", "ohne", "verstellt",
-  "blockiert", "abgelaufen", "manipuliert", "unvollständig", "offen", "falsch", "gefahr",
-  "lose", "nicht fixiert", "unter schwebend", "unordnung", "herumliegend", "undicht", "tropft",
+  "fehlt",
+  "fehlen",
+  "fehlend",
+  "fehlende",
+  "fehlender",
+  "mangelhaft",
+  "ungenügend",
+  "ungesichert",
+  "defekt",
+  "beschädigt",
+  "nicht gesichert",
+  "nicht getragen",
+  "nicht vorhanden",
+  "nicht korrekt",
+  "ohne",
+  "verstellt",
+  "blockiert",
+  "abgelaufen",
+  "manipuliert",
+  "unvollständig",
+  "offen",
+  "falsch",
+  "gefahr",
+  "lose",
+  "nicht fixiert",
+  "unter schwebend",
+  "unordnung",
+  "herumliegend",
+  "undicht",
+  "tropft",
 ];
 const POSITIVE_CUES = [
-  "vorbildlich", "einwandfrei", "sehr gut", "gut organisiert", "sauber", "ordnungsgemäss", "korrekt",
-  "vollständig", "konsequent", "gut sichtbar", "positiv", "lobenswert", "beispielhaft",
-  "keine mängel", "keine beanstandung", "gut gelöst", "gut umgesetzt", "sauber organisiert",
+  "vorbildlich",
+  "einwandfrei",
+  "sehr gut",
+  "gut organisiert",
+  "sauber",
+  "ordnungsgemäss",
+  "korrekt",
+  "vollständig",
+  "konsequent",
+  "gut sichtbar",
+  "positiv",
+  "lobenswert",
+  "beispielhaft",
+  "keine mängel",
+  "keine beanstandung",
+  "gut gelöst",
+  "gut umgesetzt",
+  "sauber organisiert",
 ];
 const IMPROVEMENT_CUES = [
-  "könnte", "könnten", "empfehlung", "empfohlen", "verbessern", "verbesserung", "optimieren", "optimierung",
-  "sollte", "sollten", "wäre", "anregung", "vorschlag", "zweckmässig",
+  "könnte",
+  "könnten",
+  "empfehlung",
+  "empfohlen",
+  "verbessern",
+  "verbesserung",
+  "optimieren",
+  "optimierung",
+  "sollte",
+  "sollten",
+  "wäre",
+  "anregung",
+  "vorschlag",
+  "zweckmässig",
 ];
 const CRITICAL_CUES = [
-  "lebensgefahr", "einsturz", "unter schwebend", "unter spannung", "akut", "sofort gestoppt", "arbeiten gestoppt",
-  "asbest", "absturzhöhe", "ungesicherte kante",
+  "lebensgefahr",
+  "einsturz",
+  "unter schwebend",
+  "unter spannung",
+  "akut",
+  "sofort gestoppt",
+  "arbeiten gestoppt",
+  "asbest",
+  "absturzhöhe",
+  "ungesicherte kante",
 ];
 const ESCALATE_CUES = ["sofort", "mehrere", "wiederholt", "erneut", "stark", "gross", "grosse", "hoch"];
 const DEESCALATE_CUES = ["geringfügig", "klein", "kleiner", "vereinzelt", "leicht", "punktuell"];
@@ -169,9 +230,7 @@ export function classifyFinding(input: ClassificationInput, catalog: CatalogCate
 
   const maxScore = 6;
   const confidence = best ? Math.min(1, best.score / maxScore) * (assessment ? 1 : 0.8) : 0;
-  const suggestedActions = Array.from(
-    new Set([best?.sub?.sampleAction, best?.cat.sampleAction].filter((x): x is string => !!x)),
-  );
+  const suggestedActions = Array.from(new Set([best?.sub?.sampleAction, best?.cat.sampleAction].filter((x): x is string => !!x)));
 
   return {
     categoryId: best?.cat.id ?? null,
@@ -206,12 +265,17 @@ export function completenessHints(d: DraftForCompleteness): { level: "error" | "
   const severe = d.riskLevel === "high" || d.riskLevel === "critical";
   if (d.assessment === "negative" && d.riskLevel === "critical") {
     if (!d.categoryId) hints.push({ level: "error", message: "Kritische Abweichung: Kategorie ist erforderlich." });
-    if (!d.responsibleRole?.trim()) hints.push({ level: "error", message: "Kritische Abweichung: verantwortliche Rolle ist erforderlich." });
+    if (!d.responsibleRole?.trim())
+      hints.push({ level: "error", message: "Kritische Abweichung: verantwortliche Rolle ist erforderlich." });
   }
   if (!d.actionDescription?.trim()) hints.push({ level: severe ? "error" : "warning", message: "Es ist keine Massnahme erfasst." });
-  if (!d.dueDate && severe) hints.push({ level: "warning", message: "Bei hoher oder kritischer Abweichung sollte eine Frist gesetzt werden." });
-  if (!d.responsibleRole?.trim() && d.riskLevel !== "critical") hints.push({ level: "warning", message: "Keine verantwortliche Rolle bzw. Person angegeben." });
-  if (d.imageCount === 0 && d.assessment === "negative") hints.push({ level: "warning", message: "Kein Foto vorhanden – ein Bild erleichtert die Umsetzung." });
-  if (!d.description?.trim() || d.description.trim().length < 15) hints.push({ level: "warning", message: "Die Beschreibung ist sehr kurz." });
+  if (!d.dueDate && severe)
+    hints.push({ level: "warning", message: "Bei hoher oder kritischer Abweichung sollte eine Frist gesetzt werden." });
+  if (!d.responsibleRole?.trim() && d.riskLevel !== "critical")
+    hints.push({ level: "warning", message: "Keine verantwortliche Rolle bzw. Person angegeben." });
+  if (d.imageCount === 0 && d.assessment === "negative")
+    hints.push({ level: "warning", message: "Kein Foto vorhanden – ein Bild erleichtert die Umsetzung." });
+  if (!d.description?.trim() || d.description.trim().length < 15)
+    hints.push({ level: "warning", message: "Die Beschreibung ist sehr kurz." });
   return hints;
 }

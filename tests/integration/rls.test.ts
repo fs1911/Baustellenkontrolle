@@ -30,7 +30,9 @@ afterAll(async () => {
 });
 
 async function visibleSites(user: string) {
-  return asUser(user, async (tx) => (await tx<{ siteId: string }[]>`select distinct site_id from public.inspections`).map((r) => r.siteId).sort());
+  return asUser(user, async (tx) =>
+    (await tx<{ siteId: string }[]>`select distinct site_id from public.inspections`).map((r) => r.siteId).sort(),
+  );
 }
 
 describe("Mandantentrennung und Baustellenzuordnung", () => {
@@ -74,7 +76,9 @@ describe("Mandantentrennung und Baustellenzuordnung", () => {
 
   it("Management sieht Entwürfe erst mit freigegebenem Bericht", async () => {
     await asService(async (tx) => {
-      const [insp] = await tx<{ id: string }[]>`insert into public.inspections (site_id, inspector_id) values (${S.aargau}, ${U.sibe}) returning id`;
+      const [insp] = await tx<
+        { id: string }[]
+      >`insert into public.inspections (site_id, inspector_id) values (${S.aargau}, ${U.sibe}) returning id`;
       await tx`insert into public.findings (inspection_id, title, assessment) values (${insp.id}, 'Test positiv', 'positive')`;
       await tx`select set_config('request.jwt.claim.sub', ${U.mgmt}, true)`;
       await tx.unsafe("set local role authenticated");
@@ -108,7 +112,9 @@ describe("Schreibrechte", () => {
 
   it("Projektleiterin kann auf eigener Baustelle eine Kontrolle anlegen; Gesellschaft wird abgeleitet", async () => {
     const row = await asUser(U.plHochbau, async (tx) => {
-      const [r] = await tx<{ companyId: string }[]>`insert into public.inspections (site_id, inspector_id) values (${S.birr}, ${U.plHochbau}) returning company_id`;
+      const [r] = await tx<
+        { companyId: string }[]
+      >`insert into public.inspections (site_id, inspector_id) values (${S.birr}, ${U.plHochbau}) returning company_id`;
       return r;
     });
     const [site] = await sql<{ companyId: string }[]>`select company_id from public.construction_sites where id = ${S.birr}`;
@@ -136,7 +142,9 @@ describe("Schreibrechte", () => {
     await asUser(U.polier, async (tx) => {
       const r = await tx`update public.findings set title = 'Polier-Änderung' where site_id = ${S.birr}`;
       expect(r.count).toBe(0);
-      const [action] = await tx<{ id: string }[]>`select id from public.corrective_actions where site_id = ${S.birr} and status = 'open' limit 1`;
+      const [action] = await tx<
+        { id: string }[]
+      >`select id from public.corrective_actions where site_id = ${S.birr} and status = 'open' limit 1`;
       const upd = await tx`update public.corrective_actions set status = 'in_progress' where id = ${action.id}`;
       expect(upd.count).toBe(1);
       await tx`insert into public.action_updates (action_id, comment, status_from, status_to) values (${action.id}, 'Material bestellt', 'open', 'in_progress')`;
@@ -146,7 +154,9 @@ describe("Schreibrechte", () => {
   it("Polier darf Massnahmen nicht verifizieren", async () => {
     await expect(
       asUser(U.polier, async (tx) => {
-        const [action] = await tx<{ id: string }[]>`select id from public.corrective_actions where site_id = ${S.birr} and status = 'resolved' limit 1`;
+        const [action] = await tx<
+          { id: string }[]
+        >`select id from public.corrective_actions where site_id = ${S.birr} and status = 'resolved' limit 1`;
         await tx`update public.corrective_actions set status = 'verified', verification_note = 'ok' where id = ${action.id}`;
       }),
     ).rejects.toThrow(/Projektleitung bzw. SIBE vorbehalten/);
@@ -155,16 +165,18 @@ describe("Schreibrechte", () => {
   it("Polier darf Fristen nicht ändern", async () => {
     await expect(
       asUser(U.polier, async (tx) => {
-        const [action] = await tx<{ id: string }[]>`select id from public.corrective_actions where site_id = ${S.birr} and status = 'open' limit 1`;
+        const [action] = await tx<
+          { id: string }[]
+        >`select id from public.corrective_actions where site_id = ${S.birr} and status = 'open' limit 1`;
         await tx`update public.corrective_actions set due_date = due_date + 30 where id = ${action.id}`;
       }),
     ).rejects.toThrow(/Frist/);
   });
 
   it("Keine Rechteausweitung: Nicht-Admins können keine Rollen vergeben", async () => {
-    await expect(
-      asUser(U.sibe, (tx) => tx`insert into public.user_roles (user_id, role) values (${U.sibe}, 'admin')`),
-    ).rejects.toThrow(/row-level security/);
+    await expect(asUser(U.sibe, (tx) => tx`insert into public.user_roles (user_id, role) values (${U.sibe}, 'admin')`)).rejects.toThrow(
+      /row-level security/,
+    );
   });
 
   it("Audit Log ist nur für Administratoren lesbar", async () => {
@@ -219,7 +231,9 @@ describe("Fachliche Constraints", () => {
         select a.id, a.finding_id from public.corrective_actions a
         where a.status = 'resolved' and (select count(*) from public.corrective_actions b where b.finding_id = a.finding_id) = 1 limit 1`;
       await tx`update public.corrective_actions set status = 'closed', verification_note = 'Vor Ort geprüft' where id = ${a.id}`;
-      const [f] = await tx<{ status: string; closureNote: string }[]>`select status, closure_note from public.findings where id = ${a.findingId}`;
+      const [f] = await tx<
+        { status: string; closureNote: string }[]
+      >`select status, closure_note from public.findings where id = ${a.findingId}`;
       expect(f.status).toBe("closed");
       expect(f.closureNote).toContain("Vor Ort geprüft");
     });
@@ -228,8 +242,12 @@ describe("Fachliche Constraints", () => {
   it("Berichtsnummer wird je Gesellschaft fortlaufend vergeben", async () => {
     await asService(async (tx) => {
       const insp = await tx<{ id: string }[]>`select id from public.inspections where site_id = ${S.zuerich} order by inspected_at limit 2`;
-      const [a] = await tx<{ reportNumber: string }[]>`insert into public.generated_reports (inspection_id) values (${insp[0].id}) returning report_number`;
-      const [b] = await tx<{ reportNumber: string }[]>`insert into public.generated_reports (inspection_id) values (${insp[1].id}) returning report_number`;
+      const [a] = await tx<
+        { reportNumber: string }[]
+      >`insert into public.generated_reports (inspection_id) values (${insp[0].id}) returning report_number`;
+      const [b] = await tx<
+        { reportNumber: string }[]
+      >`insert into public.generated_reports (inspection_id) values (${insp[1].id}) returning report_number`;
       expect(a.reportNumber).toMatch(/^BHB-\d{4}-\d{4}$/);
       expect(Number(b.reportNumber.slice(-4))).toBe(Number(a.reportNumber.slice(-4)) + 1);
     });
@@ -240,7 +258,9 @@ describe("Fachliche Constraints", () => {
       asService(async (tx) => {
         const [insp] = await tx<{ id: string }[]>`select id from public.inspections where site_id = ${S.zuerich} limit 1`;
         const [r] = await tx<{ id: string }[]>`insert into public.generated_reports (inspection_id) values (${insp.id}) returning id`;
-        const [v] = await tx<{ id: string }[]>`insert into public.report_versions (report_id, version_no, content) values (${r.id}, 1, '{}') returning id`;
+        const [v] = await tx<
+          { id: string }[]
+        >`insert into public.report_versions (report_id, version_no, content) values (${r.id}, 1, '{}') returning id`;
         await tx`insert into public.email_deliveries (report_id, report_version_id, to_addresses, subject, body_text, provider, sent_by)
                  values (${r.id}, ${v.id}, ${["a@b.ch"]}, 'Test', 'x', 'sandbox', ${U.sibe})`;
       }),
@@ -249,8 +269,12 @@ describe("Fachliche Constraints", () => {
 
   it("Storage-Policy-Helfer respektiert Baustellenzugriff", async () => {
     await asUser(U.polier, async (tx) => {
-      const [own] = await tx<{ ok: boolean }[]>`select app.storage_site_readable(${`00000000-0000-0000-0000-000000000000/${S.birr}/x.jpg`}) as ok`;
-      const [foreign] = await tx<{ ok: boolean }[]>`select app.storage_site_readable(${`00000000-0000-0000-0000-000000000000/${S.strasse}/x.jpg`}) as ok`;
+      const [own] = await tx<
+        { ok: boolean }[]
+      >`select app.storage_site_readable(${`00000000-0000-0000-0000-000000000000/${S.birr}/x.jpg`}) as ok`;
+      const [foreign] = await tx<
+        { ok: boolean }[]
+      >`select app.storage_site_readable(${`00000000-0000-0000-0000-000000000000/${S.strasse}/x.jpg`}) as ok`;
       expect(own.ok).toBe(true);
       expect(foreign.ok).toBe(false);
     });

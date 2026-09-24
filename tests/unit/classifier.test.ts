@@ -3,10 +3,20 @@ import { classifyFinding, completenessHints, type CatalogCategory } from "@/lib/
 import { SEED_CATEGORIES } from "@/lib/domain/catalog-data";
 
 const catalog: CatalogCategory[] = SEED_CATEGORIES.map((c) => ({
-  id: c.code, code: c.code, name: c.name, keywords: c.keywords, defaultRisk: c.defaultRisk,
-  sampleAction: c.sampleAction, referenceIds: c.references,
+  id: c.code,
+  code: c.code,
+  name: c.name,
+  keywords: c.keywords,
+  defaultRisk: c.defaultRisk,
+  sampleAction: c.sampleAction,
+  referenceIds: c.references,
   subcategories: c.subcategories.map((s) => ({
-    id: s.code, code: s.code, name: s.name, keywords: s.keywords, defaultRisk: s.defaultRisk ?? null, sampleAction: s.sampleAction ?? null,
+    id: s.code,
+    code: s.code,
+    name: s.name,
+    keywords: s.keywords,
+    defaultRisk: s.defaultRisk ?? null,
+    sampleAction: s.sampleAction ?? null,
   })),
 }));
 
@@ -21,13 +31,19 @@ describe("Regelbasierter Klassifikator", () => {
   });
 
   it("erkennt elektrische Provisorien", () => {
-    const r = classifyFinding({ title: "Kabelrolle nicht abgewickelt", description: "Provisorische Beleuchtung über Mehrfachstecker, Kabel beschädigt" }, catalog);
+    const r = classifyFinding(
+      { title: "Kabelrolle nicht abgewickelt", description: "Provisorische Beleuchtung über Mehrfachstecker, Kabel beschädigt" },
+      catalog,
+    );
     expect(r.categoryId).toBe("elektro");
     expect(r.assessment).toBe("negative");
   });
 
   it("erkennt positive Feststellungen und schlägt keine Massnahmen vor", () => {
-    const r = classifyFinding({ title: "Gerüst vorbildlich", description: "Fassadengerüst einwandfrei erstellt, Gerüstfreigabe gut sichtbar" }, catalog);
+    const r = classifyFinding(
+      { title: "Gerüst vorbildlich", description: "Fassadengerüst einwandfrei erstellt, Gerüstfreigabe gut sichtbar" },
+      catalog,
+    );
     expect(r.categoryId).toBe("geruest");
     expect(r.assessment).toBe("positive");
     expect(r.riskLevel).toBeNull();
@@ -46,7 +62,10 @@ describe("Regelbasierter Klassifikator", () => {
   });
 
   it("setzt kritisch bei schwebender Last", () => {
-    const r = classifyFinding({ title: "Aufenthalt unter schwebender Last", description: "Mitarbeitende unter schwebender Last beim Kranhub" }, catalog);
+    const r = classifyFinding(
+      { title: "Aufenthalt unter schwebender Last", description: "Mitarbeitende unter schwebender Last beim Kranhub" },
+      catalog,
+    );
     expect(r.categoryId).toBe("krane");
     expect(r.riskLevel).toBe("critical");
   });
@@ -60,13 +79,33 @@ describe("Regelbasierter Klassifikator", () => {
 
 describe("Vollständigkeitshinweise", () => {
   it("verlangt Kategorie und Rolle bei kritischer Abweichung", () => {
-    const hints = completenessHints({ assessment: "negative", riskLevel: "critical", categoryId: null, responsibleRole: "", dueDate: null, actionDescription: null, description: "kurz", imageCount: 0 });
+    const hints = completenessHints({
+      assessment: "negative",
+      riskLevel: "critical",
+      categoryId: null,
+      responsibleRole: "",
+      dueDate: null,
+      actionDescription: null,
+      description: "kurz",
+      imageCount: 0,
+    });
     const errors = hints.filter((h) => h.level === "error").map((h) => h.message);
     expect(errors.some((m) => m.includes("Kategorie"))).toBe(true);
     expect(errors.some((m) => m.includes("Rolle"))).toBe(true);
     expect(errors.some((m) => m.includes("Massnahme"))).toBe(true);
   });
   it("gibt bei positiven Feststellungen keine Hinweise", () => {
-    expect(completenessHints({ assessment: "positive", riskLevel: null, categoryId: null, responsibleRole: null, dueDate: null, actionDescription: null, description: null, imageCount: 0 })).toEqual([]);
+    expect(
+      completenessHints({
+        assessment: "positive",
+        riskLevel: null,
+        categoryId: null,
+        responsibleRole: null,
+        dueDate: null,
+        actionDescription: null,
+        description: null,
+        imageCount: 0,
+      }),
+    ).toEqual([]);
   });
 });

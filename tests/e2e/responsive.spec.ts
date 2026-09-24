@@ -25,7 +25,10 @@ test("Touch-Ziele der Schnellerfassung sind mindestens 48 px hoch", async ({ pag
   await page.setViewportSize({ width: 375, height: 812 });
   await login(page, USERS.sibe);
   await page.goto("/kontrollen?q=Birr");
-  await page.getByRole("link", { name: /Wohnüberbauung Birr/ }).first().click();
+  await page
+    .getByRole("link", { name: /Wohnüberbauung Birr/ })
+    .first()
+    .click();
   await page.getByRole("link", { name: "Schnellerfassung", exact: true }).click();
   for (const name of ["Foto aufnehmen", "Positiv", "Abweichung", "Verbesserung", "Speichern"]) {
     const box = await page.getByRole("button", { name, exact: false }).first().boundingBox();

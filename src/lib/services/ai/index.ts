@@ -34,7 +34,8 @@ export function externalAiActive(settings: AllSettings): boolean {
 
 export function describeAiMode(settings: AllSettings): string {
   if (externalAiActive(settings)) return `Externer KI-Dienst (Anthropic, Modell ${env().AI_MODEL ?? DEFAULT_MODEL})`;
-  if (env().AI_PROVIDER === "anthropic" && !settings.ai.allowExternal) return "Regelbasiert (externe KI in den Einstellungen nicht freigegeben)";
+  if (env().AI_PROVIDER === "anthropic" && !settings.ai.allowExternal)
+    return "Regelbasiert (externe KI in den Einstellungen nicht freigegeben)";
   return "Regelbasiert (lokal, ohne Datenübermittlung)";
 }
 
@@ -122,7 +123,8 @@ Erfinde keine Fakten, die nicht in der Feststellung stehen.`,
       inputHash,
     };
   } catch (err) {
-    const reason = err instanceof Anthropic.APIError ? `KI-Dienst nicht verfügbar (${err.status ?? "Netzwerk"})` : "KI-Dienst nicht verfügbar";
+    const reason =
+      err instanceof Anthropic.APIError ? `KI-Dienst nicht verfügbar (${err.status ?? "Netzwerk"})` : "KI-Dienst nicht verfügbar";
     return { value: ruleResult, provider: "rules", model: null, inputHash, fallbackReason: reason };
   }
 }
@@ -146,11 +148,15 @@ Tonalität: sachlich, präventiv, lösungsorientiert, konstruktiv. Länge: 4–7
     if (response.stop_reason === "refusal") {
       return { value: ruleText, provider: "rules", model: null, inputHash, fallbackReason: "KI-Dienst hat die Anfrage abgelehnt" };
     }
-    const text = response.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("\n").trim();
+    const text = response.content
+      .flatMap((b) => (b.type === "text" ? [b.text] : []))
+      .join("\n")
+      .trim();
     if (!text) return { value: ruleText, provider: "rules", model: null, inputHash, fallbackReason: "Leere Antwort" };
     return { value: text.replace(/ß/g, "ss"), provider: "anthropic", model, inputHash };
   } catch (err) {
-    const reason = err instanceof Anthropic.APIError ? `KI-Dienst nicht verfügbar (${err.status ?? "Netzwerk"})` : "KI-Dienst nicht verfügbar";
+    const reason =
+      err instanceof Anthropic.APIError ? `KI-Dienst nicht verfügbar (${err.status ?? "Netzwerk"})` : "KI-Dienst nicht verfügbar";
     return { value: ruleText, provider: "rules", model: null, inputHash, fallbackReason: reason };
   }
 }

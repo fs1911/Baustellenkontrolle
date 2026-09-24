@@ -6,19 +6,42 @@ const control =
   "focus:border-info focus:outline-none disabled:bg-slate-100 aria-[invalid=true]:border-negative";
 
 export function Field({
-  label, htmlFor, error, hint, required, children, className,
-}: { label: ReactNode; htmlFor: string; error?: string; hint?: ReactNode; required?: boolean; children: ReactNode; className?: string }) {
+  label,
+  htmlFor,
+  error,
+  hint,
+  required,
+  children,
+  className,
+}: {
+  label: ReactNode;
+  htmlFor: string;
+  error?: string;
+  hint?: ReactNode;
+  required?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div className={cn("space-y-1.5", className)}>
-      <label htmlFor={htmlFor} className="block text-sm font-semibold text-ink">
+      <label htmlFor={htmlFor} className="text-ink block text-sm font-semibold">
         {label}
-        {required && <span className="ml-0.5 text-negative" aria-hidden> *</span>}
+        {required && (
+          <span className="text-negative ml-0.5" aria-hidden>
+            {" "}
+            *
+          </span>
+        )}
         {required && <span className="sr-only"> (Pflichtfeld)</span>}
       </label>
       {children}
-      {hint && !error && <p className="text-sm text-ink-muted" id={`${htmlFor}-hint`}>{hint}</p>}
+      {hint && !error && (
+        <p className="text-ink-muted text-sm" id={`${htmlFor}-hint`}>
+          {hint}
+        </p>
+      )}
       {error && (
-        <p className="text-sm font-semibold text-negative" id={`${htmlFor}-error`} role="alert">
+        <p className="text-negative text-sm font-semibold" id={`${htmlFor}-error`} role="alert">
           {error}
         </p>
       )}
@@ -30,11 +53,17 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
   return <input ref={ref} className={cn(control, "min-h-12", className)} {...props} />;
 });
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, rows = 4, ...props }, ref) {
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea(
+  { className, rows = 4, ...props },
+  ref,
+) {
   return <textarea ref={ref} rows={rows} className={cn(control, "py-2.5", className)} {...props} />;
 });
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select({ className, children, ...props }, ref) {
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select(
+  { className, children, ...props },
+  ref,
+) {
   return (
     <select ref={ref} className={cn(control, "min-h-12 pr-8", className)} {...props}>
       {children}
@@ -53,7 +82,13 @@ export function Checkbox({ label, id, className, ...props }: InputHTMLAttributes
 
 /** Grosse Auswahlkacheln (z. B. Beurteilung, Risikostufe) – gut mit Handschuhen bedienbar. */
 export function ChoiceGroup<T extends string>({
-  name, value, onChange, options, legend, columns = 3, error,
+  name,
+  value,
+  onChange,
+  options,
+  legend,
+  columns = 3,
+  error,
 }: {
   name: string;
   value: T | null | undefined;
@@ -65,8 +100,11 @@ export function ChoiceGroup<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="mb-1.5 block text-sm font-semibold text-ink">{legend}</legend>
-      <div className={cn("grid gap-2", columns === 2 ? "grid-cols-2" : columns === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4")} role="radiogroup">
+      <legend className="text-ink mb-1.5 block text-sm font-semibold">{legend}</legend>
+      <div
+        className={cn("grid gap-2", columns === 2 ? "grid-cols-2" : columns === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4")}
+        role="radiogroup"
+      >
         {options.map((o) => {
           const active = value === o.value;
           return (
@@ -74,7 +112,7 @@ export function ChoiceGroup<T extends string>({
               key={o.value}
               className={cn(
                 "flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 px-2 py-2 text-center text-sm font-semibold transition-colors",
-                active ? o.activeClass : "border-line-strong bg-white text-ink hover:bg-slate-50",
+                active ? o.activeClass : "border-line-strong text-ink bg-white hover:bg-slate-50",
               )}
             >
               <input type="radio" name={name} value={o.value} checked={active} onChange={() => onChange(o.value)} className="sr-only" />
@@ -85,7 +123,11 @@ export function ChoiceGroup<T extends string>({
           );
         })}
       </div>
-      {error && <p className="mt-1 text-sm font-semibold text-negative" role="alert">{error}</p>}
+      {error && (
+        <p className="text-negative mt-1 text-sm font-semibold" role="alert">
+          {error}
+        </p>
+      )}
     </fieldset>
   );
 }

@@ -18,10 +18,22 @@ export interface ActionListRow {
   riskLevel: RiskLevel | null;
   completionNote: string | null;
   overdue: boolean;
-  updates: { id: string; comment: string | null; statusFrom: ActionStatus | null; statusTo: ActionStatus | null; createdAt: Date; authorName: string | null; attachments: { id: string; storagePath: string; fileName: string }[] }[];
+  updates: {
+    id: string;
+    comment: string | null;
+    statusFrom: ActionStatus | null;
+    statusTo: ActionStatus | null;
+    createdAt: Date;
+    authorName: string | null;
+    attachments: { id: string; storagePath: string; fileName: string }[];
+  }[];
 }
 
-export async function listActions(tx: Tx, f: { open?: boolean; overdue?: boolean; siteId?: string; status?: ActionStatus }, limit = 200): Promise<ActionListRow[]> {
+export async function listActions(
+  tx: Tx,
+  f: { open?: boolean; overdue?: boolean; siteId?: string; status?: ActionStatus },
+  limit = 200,
+): Promise<ActionListRow[]> {
   const rows = await tx<Omit<ActionListRow, "updates">[]>`
     select a.id, a.finding_id, f.inspection_id, a.site_id, s.name as site_name, c.name as company_name, f.title as finding_title,
            a.description, a.responsible_role, a.responsible_person, a.due_date::text as due_date, a.status, f.risk_level, a.completion_note,

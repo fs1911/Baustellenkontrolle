@@ -107,9 +107,18 @@ export async function addFindingImage(
     select coalesce(max(sort_order), -1) + 1 as next from public.finding_images where finding_id = ${findingId}`;
   // Zuerst DB-Eintrag (RLS-Prüfung), dann Upload; bei Upload-Fehler rollt die Transaktion zurück.
   await tx`insert into public.finding_images ${tx({
-    id, findingId, storagePath: `${base}.jpg`, thumbnailPath: `${base}-thumb.jpg`, caption: file.caption,
-    mimeType: processed.mimeType, width: processed.width, height: processed.height, sizeBytes: processed.data.byteLength,
-    metadataStripped: processed.metadataStripped, sortOrder: next, clientRef: file.clientRef ?? null,
+    id,
+    findingId,
+    storagePath: `${base}.jpg`,
+    thumbnailPath: `${base}-thumb.jpg`,
+    caption: file.caption,
+    mimeType: processed.mimeType,
+    width: processed.width,
+    height: processed.height,
+    sizeBytes: processed.data.byteLength,
+    metadataStripped: processed.metadataStripped,
+    sortOrder: next,
+    clientRef: file.clientRef ?? null,
   })}`;
   await storage().put("finding-images", `${base}.jpg`, processed.data, "image/jpeg");
   await storage().put("finding-images", `${base}-thumb.jpg`, processed.thumbnail, "image/jpeg");

@@ -17,7 +17,10 @@ test.describe("Berechtigungen im UI und serverseitig", () => {
   test("Fremde Kontrolle ist für Projektleiter nicht abrufbar", async ({ page, request }) => {
     await login(page, USERS.sibe);
     await page.goto("/kontrollen?q=Beispielstrasse");
-    const href = await page.getByRole("link", { name: /Infrastrukturprojekt Beispielstrasse/ }).first().getAttribute("href");
+    const href = await page
+      .getByRole("link", { name: /Infrastrukturprojekt Beispielstrasse/ })
+      .first()
+      .getAttribute("href");
     await page.context().clearCookies();
     await login(page, USERS.pl);
     await page.goto(href!);

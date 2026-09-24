@@ -47,20 +47,53 @@ export default async function InspectionDetailPage({ params }: PageProps<"/kontr
   return (
     <>
       <PageHeader
-        back={<Link href="/kontrollen" className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink"><ChevronLeft className="size-4" aria-hidden /> Kontrollen</Link>}
+        back={
+          <Link href="/kontrollen" className="text-ink-muted hover:text-ink inline-flex min-h-10 items-center gap-1 text-sm font-semibold">
+            <ChevronLeft className="size-4" aria-hidden /> Kontrollen
+          </Link>
+        }
         title={i.site.name}
-        description={<span className="flex flex-wrap items-center gap-2">{i.company.name} · {formatDateTime(i.inspectedAt)} · {INSPECTION_TYPE_LABEL[i.inspectionType]} <InspectionStatusBadge value={i.status} />{i.report && <ReportStatusBadge value={i.report.status} />}</span>}
-        actions={<>
-          <ButtonLink href={`/kontrollen/${i.id}/bericht`} variant="secondary"><FileText className="size-5" aria-hidden /> Bericht</ButtonLink>
-          {editable && <ButtonLink href={`/kontrollen/${i.id}/bearbeiten`} variant="outline"><Pencil className="size-5" aria-hidden /> Bearbeiten</ButtonLink>}
-          {editable && <InspectionStatusActions id={i.id} status={i.status} canDelete={user.permissions.manageable_company_ids.includes(i.companyId)} />}
-        </>}
+        description={
+          <span className="flex flex-wrap items-center gap-2">
+            {i.company.name} · {formatDateTime(i.inspectedAt)} · {INSPECTION_TYPE_LABEL[i.inspectionType]}{" "}
+            <InspectionStatusBadge value={i.status} />
+            {i.report && <ReportStatusBadge value={i.report.status} />}
+          </span>
+        }
+        actions={
+          <>
+            <ButtonLink href={`/kontrollen/${i.id}/bericht`} variant="secondary">
+              <FileText className="size-5" aria-hidden /> Bericht
+            </ButtonLink>
+            {editable && (
+              <ButtonLink href={`/kontrollen/${i.id}/bearbeiten`} variant="outline">
+                <Pencil className="size-5" aria-hidden /> Bearbeiten
+              </ButtonLink>
+            )}
+            {editable && (
+              <InspectionStatusActions
+                id={i.id}
+                status={i.status}
+                canDelete={user.permissions.manageable_company_ids.includes(i.companyId)}
+              />
+            )}
+          </>
+        }
       />
 
       {editable && (
         <div className="mb-5 grid grid-cols-2 gap-3">
-          <ButtonLink href={`/kontrollen/${i.id}/feststellungen/neu`} size="xl" className="w-full px-2 text-lg sm:text-xl"><Plus className="size-6 shrink-0" aria-hidden /> Feststellung</ButtonLink>
-          <ButtonLink href={`/kontrollen/${i.id}/schnellerfassung`} size="xl" variant="secondary" className="w-full px-2 text-lg sm:text-xl"><Zap className="size-6 shrink-0" aria-hidden /> {"Schnell\u00ADerfassung"}</ButtonLink>
+          <ButtonLink href={`/kontrollen/${i.id}/feststellungen/neu`} size="xl" className="w-full px-2 text-lg sm:text-xl">
+            <Plus className="size-6 shrink-0" aria-hidden /> Feststellung
+          </ButtonLink>
+          <ButtonLink
+            href={`/kontrollen/${i.id}/schnellerfassung`}
+            size="xl"
+            variant="secondary"
+            className="w-full px-2 text-lg sm:text-xl"
+          >
+            <Zap className="size-6 shrink-0" aria-hidden /> {"Schnell\u00ADerfassung"}
+          </ButtonLink>
         </div>
       )}
 
@@ -73,9 +106,18 @@ export default async function InspectionDetailPage({ params }: PageProps<"/kontr
             <Tag className="text-improve">{counts.improvement} Verbesserung(en)</Tag>
           </div>
           {findings.length === 0 ? (
-            <EmptyState icon={<Camera className="size-12" aria-hidden />} title="Noch keine Feststellungen"
+            <EmptyState
+              icon={<Camera className="size-12" aria-hidden />}
+              title="Noch keine Feststellungen"
               description="Erfassen Sie positive Beobachtungen, Abweichungen und Verbesserungsmöglichkeiten – direkt mit Foto."
-              action={editable && <ButtonLink href={`/kontrollen/${i.id}/feststellungen/neu`}><Plus className="size-5" aria-hidden /> Erste Feststellung erfassen</ButtonLink>} />
+              action={
+                editable && (
+                  <ButtonLink href={`/kontrollen/${i.id}/feststellungen/neu`}>
+                    <Plus className="size-5" aria-hidden /> Erste Feststellung erfassen
+                  </ButtonLink>
+                )
+              }
+            />
           ) : (
             <ol className="space-y-3">
               {findings.map((f) => {
@@ -85,24 +127,47 @@ export default async function InspectionDetailPage({ params }: PageProps<"/kontr
                 const href = editable ? `/kontrollen/${i.id}/feststellungen/${f.id}` : `/kontrollen/${i.id}/feststellungen/${f.id}`;
                 return (
                   <li key={f.id}>
-                    <Link href={href} className="flex gap-3 rounded-[var(--radius-card)] border border-line bg-white p-3 shadow-[var(--shadow-card)] hover:border-line-strong sm:p-4">
+                    <Link
+                      href={href}
+                      className="border-line hover:border-line-strong flex gap-3 rounded-[var(--radius-card)] border bg-white p-3 shadow-[var(--shadow-card)] sm:p-4"
+                    >
                       <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 sm:size-24">
                         {f.images[0] ? (
-                          <Image src={thumbs.get(f.images[0].id)!} alt={f.images[0].caption ?? `Foto zu ${f.title}`} width={96} height={96} unoptimized className="size-full object-cover" />
+                          <Image
+                            src={thumbs.get(f.images[0].id)!}
+                            alt={f.images[0].caption ?? `Foto zu ${f.title}`}
+                            width={96}
+                            height={96}
+                            unoptimized
+                            className="size-full object-cover"
+                          />
                         ) : (
-                          <ImageIcon className="size-8 text-ink-subtle" aria-label="Kein Foto" />
+                          <ImageIcon className="text-ink-subtle size-8" aria-label="Kein Foto" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1 space-y-1.5">
-                        <p className="font-semibold"><span className="text-ink-muted">{f.number}.</span> {f.title}</p>
+                        <p className="font-semibold">
+                          <span className="text-ink-muted">{f.number}.</span> {f.title}
+                        </p>
                         <div className="flex flex-wrap gap-1.5">
                           <AssessmentBadge value={f.assessment} />
                           <RiskBadge value={f.riskLevel} />
                           <ActionStatusBadge value={f.status} overdue={overdue} />
-                          {rec && <Tag className="border-violet-300 bg-violet-50 text-violet-800"><Repeat className="size-4" aria-hidden /> Wiederkehrend · Score {rec.score}</Tag>}
+                          {rec && (
+                            <Tag className="border-violet-300 bg-violet-50 text-violet-800">
+                              <Repeat className="size-4" aria-hidden /> Wiederkehrend · Score {rec.score}
+                            </Tag>
+                          )}
                         </div>
-                        <p className="text-sm text-ink-muted">{[f.categoryName, f.subcategoryName].filter(Boolean).join(" / ") || "Ohne Kategorie"}</p>
-                        {action && <p className="line-clamp-2 text-sm"><span className="font-semibold">Massnahme:</span> {action.description}{action.dueDate && <> · Frist {formatDate(action.dueDate)}</>}</p>}
+                        <p className="text-ink-muted text-sm">
+                          {[f.categoryName, f.subcategoryName].filter(Boolean).join(" / ") || "Ohne Kategorie"}
+                        </p>
+                        {action && (
+                          <p className="line-clamp-2 text-sm">
+                            <span className="font-semibold">Massnahme:</span> {action.description}
+                            {action.dueDate && <> · Frist {formatDate(action.dueDate)}</>}
+                          </p>
+                        )}
                       </div>
                     </Link>
                   </li>
@@ -115,18 +180,26 @@ export default async function InspectionDetailPage({ params }: PageProps<"/kontr
         <Card className="h-fit">
           <CardHeader title="Angaben" />
           <CardBody>
-            <KeyValue items={[
-              { label: "Gesellschaft", value: i.company.name },
-              { label: "Baustelle / Projekt", value: `${i.site.name}${i.site.projectName && i.site.projectName !== i.site.name ? ` (${i.site.projectName})` : ""}` },
-              { label: "Baustellen-/Projektnummer", value: i.site.siteNumber },
-              { label: "Adresse", value: formatSiteAddress(i.site) },
-              { label: "Datum / Uhrzeit", value: formatDateTime(i.inspectedAt) },
-              { label: "Kontrolltyp", value: INSPECTION_TYPE_LABEL[i.inspectionType] },
-              { label: "Kontrollierende Person", value: i.inspectorName },
-              { label: "Anwesende", value: i.participants.map((p) => [p.fullName, p.functionLabel].filter(Boolean).join(", ")).join("; ") },
-              { label: "Wetter", value: i.weather },
-              { label: "Bereich / Gewerk", value: i.area },
-            ]} />
+            <KeyValue
+              items={[
+                { label: "Gesellschaft", value: i.company.name },
+                {
+                  label: "Baustelle / Projekt",
+                  value: `${i.site.name}${i.site.projectName && i.site.projectName !== i.site.name ? ` (${i.site.projectName})` : ""}`,
+                },
+                { label: "Baustellen-/Projektnummer", value: i.site.siteNumber },
+                { label: "Adresse", value: formatSiteAddress(i.site) },
+                { label: "Datum / Uhrzeit", value: formatDateTime(i.inspectedAt) },
+                { label: "Kontrolltyp", value: INSPECTION_TYPE_LABEL[i.inspectionType] },
+                { label: "Kontrollierende Person", value: i.inspectorName },
+                {
+                  label: "Anwesende",
+                  value: i.participants.map((p) => [p.fullName, p.functionLabel].filter(Boolean).join(", ")).join("; "),
+                },
+                { label: "Wetter", value: i.weather },
+                { label: "Bereich / Gewerk", value: i.area },
+              ]}
+            />
             {i.notes && <p className="mt-4 rounded-lg bg-slate-50 p-3 text-sm">{i.notes}</p>}
           </CardBody>
         </Card>
