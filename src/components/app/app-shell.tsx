@@ -16,6 +16,11 @@ const ICONS: Record<NavIcon, typeof LayoutDashboard> = {
   sites: Building2, reports: FileText, management: BarChart3, admin: ShieldCheck, settings: Settings,
 };
 
+/** Beim Abmelden zwischengespeicherte Seiten vom Gerät entfernen. */
+function clearOfflineCaches() {
+  navigator.serviceWorker?.controller?.postMessage("clear-caches");
+}
+
 export function AppShell({ items, user, canCreate, children }: { items: NavItem[]; user: { name: string; roleLabel: string }; canCreate: boolean; children: ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,7 +62,7 @@ export function AppShell({ items, user, canCreate, children }: { items: NavItem[
             <UserCircle className="size-6 shrink-0" aria-hidden />
             <span className="min-w-0 leading-tight"><span className="block truncate text-sm font-semibold text-white">{user.name}</span><span className="block truncate text-xs text-slate-400">{user.roleLabel}</span></span>
           </Link>
-          <form action={logoutAction}>
+          <form action={logoutAction} onSubmit={clearOfflineCaches}>
             <button type="submit" className="mt-1 flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm hover:bg-white/10">
               <LogOut className="size-5" aria-hidden /> Abmelden
             </button>
@@ -95,7 +100,7 @@ export function AppShell({ items, user, canCreate, children }: { items: NavItem[
               })}
               <Link href="/profil" onClick={() => setMenuOpen(false)} className="flex min-h-12 items-center gap-3 rounded-lg px-3 hover:bg-white/10"><UserCircle className="size-5" aria-hidden /> Profil</Link>
             </div>
-            <form action={logoutAction} className="border-t border-white/10 p-3">
+            <form action={logoutAction} onSubmit={clearOfflineCaches} className="border-t border-white/10 p-3">
               <button type="submit" className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 hover:bg-white/10"><LogOut className="size-5" aria-hidden /> Abmelden</button>
             </form>
           </nav>

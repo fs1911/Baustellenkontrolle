@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   applicationName: "Baustellenkontrolle",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Kontrolle", statusBarStyle: "black-translucent" },
-  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
   robots: { index: false, follow: false },
 };
 
