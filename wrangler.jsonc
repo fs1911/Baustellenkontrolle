@@ -23,7 +23,7 @@
     "AI_PROVIDER": "rules",
     // Ohne native Bildbibliothek (sharp) – Fotos werden im Browser verkleinert.
     "IMAGE_PROCESSING": "basic",
-    // Öffentliche Adresse des Workers, nach dem ersten Deploy anpassen (für sichere Cookies und CSRF-Prüfung).
-    "APP_BASE_URL": "https://baustellenkontrolle.workers.dev",
+    // Öffentliche Adresse des Workers (für sichere Cookies und CSRF-Prüfung).
+    "APP_BASE_URL": "https://baustellenkontrolle.filip-subara.workers.dev",
   },
 }
