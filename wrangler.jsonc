@@ -2,6 +2,7 @@
   // Cloudflare Workers (vinext). Anleitung: docs/deployment.md → «Cloudflare Workers».
   // Secrets NIE hier eintragen, sondern mit `npx wrangler secret put <NAME>`:
   //   DATABASE_URL (Supabase Session/Transaction Pooler), SESSION_SECRET, SUPABASE_SERVICE_ROLE_KEY
+  // Datenbank bevorzugt über Hyperdrive: Binding "HYPERDRIVE" (siehe docs/deployment.md).
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "baustellenkontrolle",
   "compatibility_date": "2026-09-24",

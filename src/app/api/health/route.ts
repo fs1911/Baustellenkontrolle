@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { configIssues } from "@/lib/env";
-import { withService } from "@/lib/db/client";
+import { dbRoute, withService } from "@/lib/db/client";
 
 /**
  * Diagnose für den Betrieb (z. B. nach einem Deploy): meldet fehlende oder ungültige Einstellungen
@@ -26,6 +26,7 @@ export async function GET() {
     {
       status: issues.length === 0 && database.startsWith("ok") ? "ok" : "fehler",
       konfiguration: issues.length === 0 ? "vollständig" : issues,
+      verbindung: await dbRoute(),
       datenbank: database,
     },
     { headers: { "cache-control": "no-store" } },

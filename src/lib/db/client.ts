@@ -15,16 +15,50 @@ import { parseConnectionString } from "./connection-string";
 type Sql = postgres.Sql<Record<string, never>>;
 export type Tx = postgres.TransactionSql<Record<string, never>>;
 
-const globalForDb = globalThis as unknown as { __bkSql?: Sql };
+const globalForDb = globalThis as unknown as { __bkSql?: Promise<Sql> };
 
 /**
  * Cloudflare Workers erlauben keine I/O-Objekte (Sockets) über Anfragegrenzen hinweg.
- * Dort wird pro Transaktion eine eigene Verbindung geöffnet und danach geschlossen
- * (mit Hyperdrive oder dem Supabase-Pooler ist das günstig).
+ * Dort wird pro Transaktion eine eigene Verbindung geöffnet und danach geschlossen.
+ * Ist die Binding `HYPERDRIVE` konfiguriert, läuft die Verbindung über Hyperdrive
+ * (Pool nahe der Datenbank, TLS dort); sonst direkt über DATABASE_URL.
  */
 const isWorkers = typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
 
-function connect(max: number): Sql {
+export type DbRoute = "hyperdrive" | "direkt";
+
+const baseOptions = {
+  idle_timeout: 20,
+  connect_timeout: 10,
+  prepare: false, // kompatibel mit Supabase Transaction Pooler (Supavisor) und Hyperdrive
+  transform: postgres.camel,
+  onnotice: () => {},
+};
+
+async function hyperdriveConnectionString(): Promise<string | undefined> {
+  if (!isWorkers) return undefined;
+  try {
+    // Laufzeit-Modul von workerd; der Name wird dynamisch gebildet, damit Node/Next es nie auflösen.
+    const spec = ["cloudflare", "workers"].join(":");
+    const mod = (await import(/* @vite-ignore */ /* webpackIgnore: true */ spec)) as {
+      env?: { HYPERDRIVE?: { connectionString?: string } };
+    };
+    return mod.env?.HYPERDRIVE?.connectionString || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Welcher Verbindungsweg aktuell genutzt wird (für /api/health). */
+export async function dbRoute(): Promise<DbRoute> {
+  return (await hyperdriveConnectionString()) ? "hyperdrive" : "direkt";
+}
+
+async function connect(max: number): Promise<Sql> {
+  const viaHyperdrive = await hyperdriveConnectionString();
+  if (viaHyperdrive) {
+    return postgres(viaHyperdrive, { ...baseOptions, max }) as unknown as Sql;
+  }
   const c = parseConnectionString(env().DATABASE_URL);
   return postgres({
     host: c.host,
@@ -34,17 +68,13 @@ function connect(max: number): Sql {
     password: c.password,
     ssl: c.ssl ? "require" : false,
     max,
-    idle_timeout: 20,
-    connect_timeout: 10,
-    prepare: false, // kompatibel mit Supabase Transaction Pooler (Supavisor)
-    transform: postgres.camel,
-    onnotice: () => {},
+    ...baseOptions,
   }) as unknown as Sql;
 }
 
 async function run<T>(fn: (sql: Sql) => Promise<T>): Promise<T> {
   if (isWorkers) {
-    const sql = connect(1);
+    const sql = await connect(1);
     try {
       return await fn(sql);
     } finally {
@@ -52,7 +82,7 @@ async function run<T>(fn: (sql: Sql) => Promise<T>): Promise<T> {
     }
   }
   globalForDb.__bkSql ??= connect(10);
-  return fn(globalForDb.__bkSql);
+  return fn(await globalForDb.__bkSql);
 }
 
 export async function withUser<T>(userId: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
@@ -76,7 +106,7 @@ export async function withService<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
 /** Schliesst den Pool (Tests / Skripte). */
 export async function closeDb(): Promise<void> {
   if (globalForDb.__bkSql) {
-    await globalForDb.__bkSql.end({ timeout: 5 });
+    await (await globalForDb.__bkSql).end({ timeout: 5 });
     globalForDb.__bkSql = undefined;
   }
 }

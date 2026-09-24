@@ -53,7 +53,7 @@ und `wrangler.jsonc`.
 | Thema | Workers | Umsetzung |
 |---|---|---|
 | Bildverarbeitung | kein `sharp` (nativ) | `IMAGE_PROCESSING=basic`: Fotos werden im Browser verkleinert und als JPEG neu kodiert; der Server prüft Signatur/Abmessungen und entfernt EXIF/GPS byteweise (`src/lib/services/image-basic.ts`). Logos nur PNG/JPEG (kein SVG). |
-| Datenbank | keine Verbindungen über Anfragen hinweg | pro Transaktion eigene Verbindung (`src/lib/db/client.ts`), `DATABASE_URL` = Supabase Transaction Pooler |
+| Datenbank | keine Verbindungen über Anfragen hinweg | pro Transaktion eigene Verbindung (`src/lib/db/client.ts`); empfohlen über **Hyperdrive** (Binding `HYPERDRIVE`), sonst direkt über `DATABASE_URL` |
 | Dateien | kein beschreibbares Dateisystem | `STORAGE_PROVIDER=supabase`; Mail-Sandbox in `attachments/mail-sandbox/` |
 | PDF | `@react-pdf` | Build-Anpassungen in `vite.config.ts` (Browser-Build von pdfkit, vorkompiliertes Yoga-WebAssembly, volles React für den PDF-Renderer) |
 
@@ -99,6 +99,15 @@ Alternativ Deployment über **Workers Builds** (GitHub-Anbindung im Cloudflare-D
 | Secrets | Worker → Settings → Variables and Secrets: `DATABASE_URL`, `SESSION_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` (Typ «Secret») |
 
 Der Build benötigt keine Secrets; sie werden erst zur Laufzeit gelesen.
+
+**Hyperdrive (empfohlen, auch im Free-Plan):** Eine direkte Verbindung von Workers zum Supabase-Pooler kann
+beim TLS-Aufbau scheitern. postgres.js versucht es dann in einer Schleife erneut, bis Cloudflare mit
+«Too many subrequests» abbricht. Hyperdrive übernimmt TLS und Pooling:
+1. Cloudflare Dashboard → Storage & Databases → Hyperdrive → Create configuration.
+2. Connection string: Supabase → Connect → **Session pooler** (Port 5432), mit echtem Passwort.
+3. Die Konfigurations-ID in `wrangler.jsonc` unter `hyperdrive` eintragen (Binding `HYPERDRIVE`).
+`/api/health` meldet danach `"verbindung":"hyperdrive"`. `DATABASE_URL` bleibt als Secret nötig (Node-Skripte,
+Fallback).
 
 ## Zeitgesteuerte Jobs
 
