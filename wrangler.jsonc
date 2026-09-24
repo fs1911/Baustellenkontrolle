@@ -14,6 +14,15 @@
     "binding": "ASSETS",
   },
   "observability": { "enabled": true },
+  // Datenbankverbindung über Hyperdrive (Supabase Session Pooler, Caching aus wegen RLS/Aktualität).
+  // localConnectionString gilt nur für `wrangler dev` gegen die lokale Docker-DB.
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "ce0997021226419b8be88c64fe136737",
+      "localConnectionString": "postgresql://postgres:postgres@localhost:54322/postgres"
+    }
+  ],
   "vars": {
     // Demo/Staging: lokale Anmeldung und Mail-Sandbox. Für Produktion siehe docs/deployment.md.
     "APP_ENV": "staging",
