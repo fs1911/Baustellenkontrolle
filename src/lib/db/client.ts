@@ -1,6 +1,7 @@
 import "server-only";
 import postgres from "postgres";
 import { env } from "@/lib/env";
+import { parseConnectionString } from "./connection-string";
 
 /**
  * Datenbankzugriff.
@@ -24,7 +25,14 @@ const globalForDb = globalThis as unknown as { __bkSql?: Sql };
 const isWorkers = typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
 
 function connect(max: number): Sql {
-  return postgres(env().DATABASE_URL, {
+  const c = parseConnectionString(env().DATABASE_URL);
+  return postgres({
+    host: c.host,
+    port: c.port,
+    database: c.database,
+    username: c.username,
+    password: c.password,
+    ssl: c.ssl ? "require" : false,
     max,
     idle_timeout: 20,
     connect_timeout: 10,
