@@ -22,11 +22,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ungültige Anfrage" }, { status: 400 });
   try {
     const logo = await processLogo(Buffer.from(await file.arrayBuffer()));
-    const path = `${companyId}/logo-${randomUUID()}.png`;
-    await storage().put("company-logos", path, logo.data, "image/png");
+    const path = `${companyId}/logo-${randomUUID()}.${logo.mimeType === "image/png" ? "png" : "jpg"}`;
+    await storage().put("company-logos", path, logo.data, logo.mimeType);
     await withUser(user.id, async (tx) => {
       await tx`update public.company_logos set is_active = false where company_id = ${companyId} and is_active`;
-      await tx`insert into public.company_logos (company_id, storage_path, mime_type, width, height) values (${companyId}, ${path}, 'image/png', ${logo.width}, ${logo.height})`;
+      await tx`insert into public.company_logos (company_id, storage_path, mime_type, width, height) values (${companyId}, ${path}, ${logo.mimeType}, ${logo.width}, ${logo.height})`;
     });
     return NextResponse.json({ ok: true, url: await storage().signedUrl("company-logos", path) });
   } catch (err) {

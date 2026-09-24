@@ -48,8 +48,10 @@ Ohne produktive Zugangsdaten läuft alles lokal: Anmeldung gegen `auth.users`, D
 | `npm test` | Unit-Tests (Domänenlogik: Scoring, Klassifikator, Summary, E-Mail) |
 | `npm run test:integration` | RLS-, Berechtigungs-, Berichts- und Versandtests gegen echte DB |
 | `npm run test:e2e` | Playwright: Kernprozess, Berechtigungen, Offline, Barrierefreiheit, Responsive |
+| `npm run build:workers` / `preview:workers` / `deploy:workers` | Cloudflare Workers (vinext): Build / lokal in workerd / Deploy – siehe [Deployment](docs/deployment.md#cloudflare-workers-vinext) |
 
-Aktueller Stand: 31 Unit-, 32 Integrations- und 34 E2E-Tests grün; Lint, Typecheck, Format, Build ohne Warnungen.
+Aktueller Stand: 36 Unit-, 32 Integrations- und 34 E2E-Tests grün (E2E zusätzlich gegen den Workers-Build in
+workerd); Lint, Typecheck, Format, Build ohne Warnungen.
 
 ## Projektstruktur
 

@@ -46,3 +46,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 !.env.example
+/dist/
+.vinext/
+.wrangler/

@@ -1,0 +1,29 @@
+{
+  // Cloudflare Workers (vinext). Anleitung: docs/deployment.md → «Cloudflare Workers».
+  // Secrets NIE hier eintragen, sondern mit `npx wrangler secret put <NAME>`:
+  //   DATABASE_URL (Supabase Session/Transaction Pooler), SESSION_SECRET, SUPABASE_SERVICE_ROLE_KEY
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "baustellenkontrolle",
+  "compatibility_date": "2026-09-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "vinext/server/fetch-handler",
+  "assets": {
+    "directory": "dist/client",
+    "not_found_handling": "none",
+    "binding": "ASSETS",
+  },
+  "observability": { "enabled": true },
+  "vars": {
+    // Demo/Staging: lokale Anmeldung und Mail-Sandbox. Für Produktion siehe docs/deployment.md.
+    "APP_ENV": "staging",
+    "AUTH_PROVIDER": "local",
+    "STORAGE_PROVIDER": "supabase",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://womwvpmnjlbrjuucbgkl.supabase.co",
+    "MAIL_PROVIDER": "sandbox",
+    "AI_PROVIDER": "rules",
+    // Ohne native Bildbibliothek (sharp) – Fotos werden im Browser verkleinert.
+    "IMAGE_PROCESSING": "basic",
+    // Öffentliche Adresse des Workers, nach dem ersten Deploy anpassen (für sichere Cookies und CSRF-Prüfung).
+    "APP_BASE_URL": "https://baustellenkontrolle.workers.dev",
+  },
+}

@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import nodemailer, { type SendMailOptions } from "nodemailer";
 import { env } from "@/lib/env";
+import { storage } from "@/lib/services/storage";
 
 export interface MailAttachment {
   filename: string;
@@ -42,31 +43,71 @@ export class MailDeliveryError extends Error {
   }
 }
 
-/** Entwicklungs-Mailer: schreibt vollständige .eml-Dateien in MAIL_SANDBOX_DIR (in der App unter Admin → Mail-Sandbox einsehbar). */
+/**
+ * Ablage der Sandbox-E-Mails: lokal im Dateisystem (MAIL_SANDBOX_DIR) oder – wenn Dateien in Supabase
+ * Storage liegen (z. B. auf Cloudflare Workers ohne beschreibbares Dateisystem) – im privaten Bucket
+ * "attachments" unter "mail-sandbox/".
+ */
+interface SandboxStore {
+  write(name: string, data: Buffer, contentType: string): Promise<void>;
+  read(name: string): Promise<Buffer>;
+  list(suffix: string, limit: number): Promise<string[]>;
+}
+
+const SANDBOX_FOLDER = "mail-sandbox";
+
+function sandboxStore(): SandboxStore {
+  if (env().STORAGE_PROVIDER === "supabase") {
+    return {
+      write: (name, data, contentType) => storage().put("attachments", `${SANDBOX_FOLDER}/${name}`, data, contentType),
+      read: (name) => storage().get("attachments", `${SANDBOX_FOLDER}/${name}`),
+      list: async (suffix, limit) =>
+        (await storage().list("attachments", SANDBOX_FOLDER, limit * 2)).filter((f) => f.endsWith(suffix)).slice(0, limit),
+    };
+  }
+  const dir = () => resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR);
+  return {
+    write: async (name, data) => {
+      await mkdir(dir(), { recursive: true });
+      await writeFile(join(dir(), name), data);
+    },
+    read: (name) => readFile(join(dir(), name)),
+    list: async (suffix, limit) =>
+      (await readdir(dir()))
+        .filter((f) => f.endsWith(suffix))
+        .sort()
+        .reverse()
+        .slice(0, limit),
+  };
+}
+
+/** Entwicklungs-Mailer: speichert vollständige .eml-Dateien (in der App unter Admin → Mail-Sandbox einsehbar). */
 class SandboxMailer implements MailAdapter {
   readonly name = "sandbox" as const;
   async send(message: MailMessage): Promise<MailResult> {
-    const dir = resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR);
-    await mkdir(dir, { recursive: true });
     const transport = nodemailer.createTransport({ streamTransport: true, buffer: true, newline: "unix" });
     const info = await transport.sendMail(toNodemailer(message));
     const id = `${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}`;
-    await writeFile(join(dir, `${id}.eml`), info.message as Buffer);
-    await writeFile(
-      join(dir, `${id}.json`),
-      JSON.stringify(
-        {
-          id,
-          to: message.to,
-          cc: message.cc,
-          bcc: message.bcc,
-          subject: message.subject,
-          attachments: message.attachments.map((a) => ({ filename: a.filename, size: a.content.byteLength })),
-          createdAt: new Date().toISOString(),
-        },
-        null,
-        2,
+    const store = sandboxStore();
+    await store.write(`${id}.eml`, info.message as Buffer, "message/rfc822");
+    await store.write(
+      `${id}.json`,
+      Buffer.from(
+        JSON.stringify(
+          {
+            id,
+            to: message.to,
+            cc: message.cc,
+            bcc: message.bcc,
+            subject: message.subject,
+            attachments: message.attachments.map((a) => ({ filename: a.filename, size: a.content.byteLength })),
+            createdAt: new Date().toISOString(),
+          },
+          null,
+          2,
+        ),
       ),
+      "application/json",
     );
     return { provider: this.name, messageId: info.messageId ?? id };
   }
@@ -198,24 +239,20 @@ export interface SandboxMailEntry {
 }
 
 export async function listSandboxMails(limit = 50): Promise<SandboxMailEntry[]> {
-  const dir = resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR);
+  const store = sandboxStore();
   let files: string[] = [];
   try {
-    files = (await readdir(dir))
-      .filter((f) => f.endsWith(".json"))
-      .sort()
-      .reverse()
-      .slice(0, limit);
+    files = await store.list(".json", limit);
   } catch {
     return [];
   }
-  return Promise.all(files.map(async (f) => JSON.parse(await readFile(join(dir, f), "utf8")) as SandboxMailEntry));
+  return Promise.all(files.map(async (f) => JSON.parse((await store.read(f)).toString("utf8")) as SandboxMailEntry));
 }
 
 export async function readSandboxMail(id: string): Promise<Buffer | null> {
   if (!/^[A-Za-z0-9-]+$/.test(id)) return null;
   try {
-    return await readFile(join(resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR), `${id}.eml`));
+    return await sandboxStore().read(`${id}.eml`);
   } catch {
     return null;
   }

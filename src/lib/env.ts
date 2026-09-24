@@ -40,6 +40,9 @@ const schema = z
     ANTHROPIC_API_KEY: z.string().optional(),
 
     CRON_SECRET: z.string().optional(),
+
+    /** "sharp" (Node.js, volle Verarbeitung) oder "basic" (Cloudflare Workers, ohne native Bibliothek). */
+    IMAGE_PROCESSING: z.enum(["sharp", "basic"]).default("sharp"),
   })
   .superRefine((env, ctx) => {
     if (env.AUTH_PROVIDER === "supabase" || env.STORAGE_PROVIDER === "supabase") {

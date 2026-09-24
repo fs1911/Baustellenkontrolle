@@ -18,7 +18,11 @@
     "test": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
-    "test:all": "npm run test && npm run test:integration && npm run test:e2e"
+    "test:all": "npm run test && npm run test:integration && npm run test:e2e",
+    "dev:workers": "vinext dev --port 3001",
+    "build:workers": "vinext build",
+    "preview:workers": "wrangler dev --config dist/server/wrangler.json",
+    "deploy:workers": "vinext-cloudflare deploy"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
@@ -45,20 +49,29 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@cloudflare/vite-plugin": "^1.58.0",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.20.4",
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vinext/cloudflare": "^1.0.0-beta.10",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-rsc": "^0.5.35",
     "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "react-server-dom-webpack": "19.2",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "vitest": "^5.0.1"
-  }
+    "vinext": "^1.0.0-beta.12",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1",
+    "wrangler": "^4.137.0"
+  },
+  "type": "module"
 }

@@ -39,6 +39,13 @@ Frist/Definition, keine Verifikation). Getestet in `tests/integration/rls.test.t
 - Malware-Prüfung: Die Neukodierung ist die erste Verteidigungslinie. Für zusätzliche Scans (z. B. ClamAV,
   Cloud-Scanner) ist der Upload-Pfad in `src/lib/services/findings.ts` bzw. `api/actions/[id]/evidence` der
   Integrationspunkt (vor `storage().put`).
+- **Cloudflare Workers (`IMAGE_PROCESSING=basic`)**: Ohne native Bibliothek findet serverseitig **keine**
+  Neukodierung statt. Die Neukodierung erfolgt im Browser (Canvas → JPEG); der Server prüft Signatur,
+  Struktur und Abmessungen, lässt nur JPEG (Fotos) bzw. PNG/JPEG (Logos, kein SVG) zu und entfernt
+  Metadaten-Segmente (EXIF/GPS/XMP/Kommentare) byteweise. Ein Angreifer, der die App umgeht, könnte
+  zusätzliche Daten in einer strukturell gültigen JPEG-Datei unterbringen. Das Risiko ist begrenzt
+  (Auslieferung nur als `image/jpeg` über kurzlebige signierte URLs der Supabase-Domain, nicht der App-Domain),
+  für den Produktivbetrieb empfiehlt sich dennoch Node (sharp) oder ein zusätzlicher Scan.
 
 ## Web-Sicherheit
 

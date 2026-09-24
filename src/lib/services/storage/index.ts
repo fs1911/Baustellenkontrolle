@@ -1,5 +1,5 @@
 import "server-only";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { SignJWT, jwtVerify } from "jose";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -13,6 +13,8 @@ export interface StorageAdapter {
   put(bucket: Bucket, path: string, data: Buffer, contentType: string): Promise<void>;
   get(bucket: Bucket, path: string): Promise<Buffer>;
   remove(bucket: Bucket, paths: string[]): Promise<void>;
+  /** Dateinamen (ohne Präfix) direkt unterhalb eines Ordners, alphabetisch absteigend. */
+  list(bucket: Bucket, folder: string, limit: number): Promise<string[]>;
   /** Kurzlebige, signierte URL. Nur nach RLS-geprüfter DB-Abfrage aufrufen. */
   signedUrl(bucket: Bucket, path: string, opts?: { downloadName?: string; ttlSeconds?: number }): Promise<string>;
 }
@@ -80,6 +82,13 @@ class LocalStorage implements StorageAdapter {
   async remove(bucket: Bucket, paths: string[]): Promise<void> {
     await Promise.all(paths.map((p) => rm(this.full(bucket, p), { force: true })));
   }
+  async list(bucket: Bucket, folder: string, limit: number): Promise<string[]> {
+    try {
+      return (await readdir(this.full(bucket, folder))).sort().reverse().slice(0, limit);
+    } catch {
+      return [];
+    }
+  }
   async signedUrl(bucket: Bucket, path: string, opts?: { downloadName?: string; ttlSeconds?: number }): Promise<string> {
     assertSafePath(path);
     const token = await createFileToken(
@@ -110,6 +119,12 @@ class SupabaseStorage implements StorageAdapter {
     paths.forEach(assertSafePath);
     const { error } = await this.client.storage.from(bucket).remove(paths);
     if (error) throw new Error(`Löschen fehlgeschlagen: ${error.message}`);
+  }
+  async list(bucket: Bucket, folder: string, limit: number): Promise<string[]> {
+    assertSafePath(folder);
+    const { data, error } = await this.client.storage.from(bucket).list(folder, { limit, sortBy: { column: "name", order: "desc" } });
+    if (error) throw new Error(`Auflisten fehlgeschlagen: ${error.message}`);
+    return (data ?? []).map((f) => f.name);
   }
   async signedUrl(bucket: Bucket, path: string, opts?: { downloadName?: string; ttlSeconds?: number }): Promise<string> {
     assertSafePath(path);

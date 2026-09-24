@@ -16,33 +16,53 @@ export type Tx = postgres.TransactionSql<Record<string, never>>;
 
 const globalForDb = globalThis as unknown as { __bkSql?: Sql };
 
-function sql(): Sql {
-  if (!globalForDb.__bkSql) {
-    globalForDb.__bkSql = postgres(env().DATABASE_URL, {
-      max: 10,
-      idle_timeout: 20,
-      connect_timeout: 10,
-      prepare: false, // kompatibel mit Supabase Transaction Pooler (Supavisor)
-      transform: postgres.camel,
-      onnotice: () => {},
-    }) as unknown as Sql;
+/**
+ * Cloudflare Workers erlauben keine I/O-Objekte (Sockets) über Anfragegrenzen hinweg.
+ * Dort wird pro Transaktion eine eigene Verbindung geöffnet und danach geschlossen
+ * (mit Hyperdrive oder dem Supabase-Pooler ist das günstig).
+ */
+const isWorkers = typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
+
+function connect(max: number): Sql {
+  return postgres(env().DATABASE_URL, {
+    max,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    prepare: false, // kompatibel mit Supabase Transaction Pooler (Supavisor)
+    transform: postgres.camel,
+    onnotice: () => {},
+  }) as unknown as Sql;
+}
+
+async function run<T>(fn: (sql: Sql) => Promise<T>): Promise<T> {
+  if (isWorkers) {
+    const sql = connect(1);
+    try {
+      return await fn(sql);
+    } finally {
+      await sql.end({ timeout: 2 });
+    }
   }
-  return globalForDb.__bkSql;
+  globalForDb.__bkSql ??= connect(10);
+  return fn(globalForDb.__bkSql);
 }
 
 export async function withUser<T>(userId: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
   const claims = JSON.stringify({ sub: userId, role: "authenticated" });
-  return (await sql().begin(async (tx) => {
-    await tx`select set_config('request.jwt.claims', ${claims}, true),
+  return run(
+    async (sql) =>
+      (await sql.begin(async (tx) => {
+        await tx`select set_config('request.jwt.claims', ${claims}, true),
                     set_config('request.jwt.claim.sub', ${userId}, true),
                     set_config('request.jwt.claim.role', 'authenticated', true)`;
-    await tx.unsafe("set local role authenticated");
-    return fn(tx as unknown as Tx);
-  })) as T;
+        await tx.unsafe("set local role authenticated");
+        return fn(tx as unknown as Tx);
+      })) as T,
+  );
 }
 
 export async function withService<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
-  return (await sql().begin(async (tx) => fn(tx as unknown as Tx))) as T;
+  return run(async (sql) => (await sql.begin(async (tx) => fn(tx as unknown as Tx))) as T);
 }
 
 /** Schliesst den Pool (Tests / Skripte). */

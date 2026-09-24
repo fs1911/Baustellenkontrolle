@@ -11,6 +11,9 @@ export interface ReportAssets {
   images: Record<string, Buffer>;
 }
 
+/** Logos sind PNG (sharp) oder – ohne native Bildverarbeitung – auch JPEG. */
+const logoFormat = (data: Buffer): "png" | "jpg" => (data[0] === 0xff && data[1] === 0xd8 ? "jpg" : "png");
+
 const ink = "#111827";
 const muted = "#4b5563";
 const line = "#d1d5db";
@@ -69,7 +72,11 @@ const s = StyleSheet.create({
 function Header({ c, assets }: { c: ReportContent; assets: ReportAssets }) {
   return (
     <View style={s.header} fixed>
-      {assets.logo ? <Image style={s.headerLogo} src={{ data: assets.logo, format: "png" }} /> : <Text style={s.h3}>{c.company.name}</Text>}
+      {assets.logo ? (
+        <Image style={s.headerLogo} src={{ data: assets.logo, format: logoFormat(assets.logo) }} />
+      ) : (
+        <Text style={s.h3}>{c.company.name}</Text>
+      )}
       <View>
         <Text style={s.headerText}>Baustellenkontrollbericht {c.reportNumber}</Text>
         <Text style={s.headerText}>
@@ -185,7 +192,7 @@ export function ReportDocument({ content: c, assets }: { content: ReportContent;
           {assets.logo && (
             <Image
               style={{ height: 70, maxWidth: 240, objectFit: "contain", marginBottom: 12 }}
-              src={{ data: assets.logo, format: "png" }}
+              src={{ data: assets.logo, format: logoFormat(assets.logo) }}
             />
           )}
           <Text style={{ fontSize: 11, color: muted }}>
