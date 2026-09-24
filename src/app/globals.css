@@ -68,6 +68,11 @@
 }
 
 @layer components {
+  /* Scroll-Container müssen Bezugsrahmen für absolut positionierte Inhalte (z. B. sr-only) sein,
+     sonst entsteht auf Mobilgeräten horizontales Scrollen der ganzen Seite. */
+  .overflow-x-auto {
+    position: relative;
+  }
   .touch-target {
     min-height: 48px;
     min-width: 48px;

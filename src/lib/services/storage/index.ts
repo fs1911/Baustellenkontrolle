@@ -61,7 +61,7 @@ export async function verifyFileToken(token: string): Promise<FileTokenPayload |
 
 class LocalStorage implements StorageAdapter {
   readonly name = "local" as const;
-  private root = resolve(process.cwd(), env().LOCAL_STORAGE_DIR);
+  private root = resolve(/* turbopackIgnore: true */ process.cwd(), env().LOCAL_STORAGE_DIR);
 
   private full(bucket: Bucket, path: string): string {
     assertSafePath(path);

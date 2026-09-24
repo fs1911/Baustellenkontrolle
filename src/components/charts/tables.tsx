@@ -74,7 +74,7 @@ export function Heatmap({ cells, drill }: { cells: { categoryId: string; categor
 
 export function RiskMatrix({ rows, drill }: { rows: { riskLevel: RiskLevel; bucket: "open" | "in_progress" | "done"; n: number }[]; drill: (risk: RiskLevel, status?: string) => string }) {
   const buckets = [["open", "Offen"], ["in_progress", "In Bearbeitung"], ["done", "Behoben / verifiziert / geschlossen"]] as const;
-  const riskCls: Record<RiskLevel, string> = { critical: "bg-red-800 text-white", high: "bg-orange-600 text-white", medium: "bg-amber-400 text-black", low: "bg-slate-200 text-black" };
+  const riskCls: Record<RiskLevel, string> = { critical: "bg-red-800 text-white", high: "bg-orange-800 text-white", medium: "bg-amber-300 text-black", low: "bg-slate-200 text-black" };
   const get = (r: RiskLevel, b: string) => rows.find((x) => x.riskLevel === r && x.bucket === b)?.n ?? 0;
   return (
     <div className="overflow-x-auto">

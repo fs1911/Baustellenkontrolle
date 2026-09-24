@@ -60,7 +60,7 @@ export default async function InspectionDetailPage({ params }: PageProps<"/kontr
       {editable && (
         <div className="mb-5 grid grid-cols-2 gap-3">
           <ButtonLink href={`/kontrollen/${i.id}/feststellungen/neu`} size="xl" className="w-full px-2 text-lg sm:text-xl"><Plus className="size-6 shrink-0" aria-hidden /> Feststellung</ButtonLink>
-          <ButtonLink href={`/kontrollen/${i.id}/schnellerfassung`} size="xl" variant="secondary" className="w-full px-2 text-lg sm:text-xl"><Zap className="size-6 shrink-0" aria-hidden /> Schnell<ButtonLink href={`/kontrollen/${i.id}/schnellerfassung`} size="xl" variant="secondary" className="w-full"><Zap className="size-6" aria-hidden /> Schnellerfassung</ButtonLink>shy;erfassung</ButtonLink>
+          <ButtonLink href={`/kontrollen/${i.id}/schnellerfassung`} size="xl" variant="secondary" className="w-full px-2 text-lg sm:text-xl"><Zap className="size-6 shrink-0" aria-hidden /> {"Schnell\u00ADerfassung"}</ButtonLink>
         </div>
       )}
 

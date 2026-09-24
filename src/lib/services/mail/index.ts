@@ -43,7 +43,7 @@ export class MailDeliveryError extends Error {
 class SandboxMailer implements MailAdapter {
   readonly name = "sandbox" as const;
   async send(message: MailMessage): Promise<MailResult> {
-    const dir = resolve(process.cwd(), env().MAIL_SANDBOX_DIR);
+    const dir = resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR);
     await mkdir(dir, { recursive: true });
     const transport = nodemailer.createTransport({ streamTransport: true, buffer: true, newline: "unix" });
     const info = await transport.sendMail(toNodemailer(message));
@@ -177,7 +177,7 @@ export interface SandboxMailEntry {
 }
 
 export async function listSandboxMails(limit = 50): Promise<SandboxMailEntry[]> {
-  const dir = resolve(process.cwd(), env().MAIL_SANDBOX_DIR);
+  const dir = resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR);
   let files: string[] = [];
   try {
     files = (await readdir(dir)).filter((f) => f.endsWith(".json")).sort().reverse().slice(0, limit);
@@ -190,7 +190,7 @@ export async function listSandboxMails(limit = 50): Promise<SandboxMailEntry[]> 
 export async function readSandboxMail(id: string): Promise<Buffer | null> {
   if (!/^[A-Za-z0-9-]+$/.test(id)) return null;
   try {
-    return await readFile(join(resolve(process.cwd(), env().MAIL_SANDBOX_DIR), `${id}.eml`));
+    return await readFile(join(resolve(/* turbopackIgnore: true */ process.cwd(), env().MAIL_SANDBOX_DIR), `${id}.eml`));
   } catch {
     return null;
   }

@@ -60,7 +60,7 @@ export default async function InspectionsPage({ searchParams }: PageProps<"/kont
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {rows.map((r) => (
-            <li key={r.id}>
+            <li key={r.id} className="min-w-0">
               <Link href={`/kontrollen/${r.id}`} className="block rounded-[var(--radius-card)] border border-line bg-white p-4 shadow-[var(--shadow-card)] hover:border-line-strong focus-visible:border-info">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">

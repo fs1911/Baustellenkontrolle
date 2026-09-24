@@ -25,11 +25,13 @@ function TableFallback({ caption, head, rows }: { caption: string; head: string[
   return (
     <details className="mt-2 text-sm">
       <summary className="min-h-10 cursor-pointer font-semibold text-info">Als Tabelle anzeigen</summary>
-      <table className="mt-2 w-full text-left">
+      <div className="mt-2 overflow-x-auto">
+      <table className="w-full text-left">
         <caption className="sr-only">{caption}</caption>
         <thead><tr>{head.map((h) => <th key={h} className="border-b border-line p-1.5">{h}</th>)}</tr></thead>
         <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j} className="border-b border-line p-1.5">{c}</td>)}</tr>)}</tbody>
       </table>
+      </div>
     </details>
   );
 }
